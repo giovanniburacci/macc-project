@@ -10,8 +10,10 @@ activityCompose = "1.9.3"
 composeBom = "2024.04.01"
 navigationCompose = "2.8.4"
 navigationRuntimeKtx = "2.8.4"
+playServicesMlkitTextRecognitionCommon = "19.1.0"
 
 [libraries]
+google-ml-kit = "com.google.mlkit:text-recognition:16.0.0"
 androidx-camera-core = "androidx.camera:camera-core:1.4.0"
 androidx-camera-camera2 = "androidx.camera:camera-camera2:1.4.0"
 androidx-camera-lifecycle = "androidx.camera:camera-lifecycle:1.4.0"
@@ -34,6 +36,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
+play-services-mlkit-text-recognition-common = { group = "com.google.android.gms", name = "play-services-mlkit-text-recognition-common", version.ref = "playServicesMlkitTextRecognitionCommon" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

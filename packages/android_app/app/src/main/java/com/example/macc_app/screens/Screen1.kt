@@ -2,6 +2,8 @@ package com.example.macc_app.screens
 
 import android.Manifest
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Environment
 import android.widget.Toast
@@ -25,6 +27,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
 @Composable
 fun Screen1() {
@@ -33,12 +39,6 @@ fun Screen1() {
 
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
-
-    val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        capturedImageUri = uri // Handle gallery selection
-    }
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -52,6 +52,80 @@ fun Screen1() {
 
     var previewView by remember { mutableStateOf<PreviewView?>(null) }
 
+    fun recognizeTextFromBitmap(bitmap: Bitmap, context: Context) {
+        // Convert the Bitmap to an InputImage
+        val image = InputImage.fromBitmap(bitmap, 0)
+
+        // Initialize the Text Recognizer
+        val recognizer: TextRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+        // Process the image
+        recognizer.process(image)
+            .addOnSuccessListener { visionText ->
+                // Handle the recognized text
+                Toast.makeText(context, "Recognized text: ${visionText.text}", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { exception ->
+                // Handle any error
+                exception.printStackTrace()
+                Toast.makeText(context, "Text recognition failed: ${exception.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    // Function to convert URI to Bitmap
+    fun getBitmapFromUri(uri: Uri, context: Context): Bitmap {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        return BitmapFactory.decodeStream(inputStream)
+    }
+
+
+    fun takePicture(
+        context: Context, // Current context
+        imageCapture: ImageCapture?, // ImageCapture instance for taking pictures
+        onImageCaptured: (Bitmap) -> Unit // Callback to handle the captured image as a Bitmap
+    ) {
+        if (imageCapture == null) {
+            Toast.makeText(context, "Camera not ready", Toast.LENGTH_SHORT).show()
+            return // Exit if the camera is not ready
+        }
+
+        // Use the camera to capture the image
+        val photoFile = File(
+            context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+            SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date()) + ".jpg"
+        )
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(context),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    // Get image as Bitmap
+                    val savedUri = Uri.fromFile(photoFile)
+                    val bitmap = getBitmapFromUri(savedUri, context)
+                    onImageCaptured(bitmap) // Pass the bitmap to the callback
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    exception.printStackTrace()
+                    Toast.makeText(context, "Failed to capture image: ${exception.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        // Handle gallery selection
+        uri?.let { imageUri ->
+            // Convert URI to Bitmap and perform text recognition
+            val bitmap = getBitmapFromUri(imageUri, context)
+            recognizeTextFromBitmap(bitmap, context)
+        }
+    }
     // Request camera permission on initial composition
     LaunchedEffect(Unit) {
         cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
@@ -83,9 +157,9 @@ fun Screen1() {
         // Take Picture Button
         Button(
             onClick = {
-                takePicture(context, imageCapture) { uri ->
-                    capturedImageUri = uri
-                    Toast.makeText(context, "Picture saved at $uri", Toast.LENGTH_SHORT).show()
+                takePicture(context, imageCapture) { bitmap ->
+                    // Perform text recognition on the captured Bitmap
+                    recognizeTextFromBitmap(bitmap, context)
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -139,38 +213,4 @@ fun Screen1() {
             }
         }
     }
-}
-
-fun takePicture(
-    context: Context,
-    imageCapture: ImageCapture?,
-    onImageCaptured: (Uri) -> Unit
-) {
-    if (imageCapture == null) {
-        Toast.makeText(context, "Camera not ready", Toast.LENGTH_SHORT).show()
-        return
-    }
-
-    val photoFile = File(
-        context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-        SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date()) + ".jpg"
-    )
-
-    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-    imageCapture.takePicture(
-        outputOptions,
-        ContextCompat.getMainExecutor(context),
-        object : ImageCapture.OnImageSavedCallback {
-            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                val savedUri = Uri.fromFile(photoFile)
-                onImageCaptured(savedUri)
-            }
-
-            override fun onError(exception: ImageCaptureException) {
-                exception.printStackTrace()
-                Toast.makeText(context, "Failed to capture image: ${exception.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    )
 }
