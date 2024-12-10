@@ -3,45 +3,71 @@ package com.example.macc_app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.macc_app.ui.theme.Macc_appTheme
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.macc_app.screens.Screen1
+import com.example.macc_app.screens.Screen2
+import com.example.macc_app.screens.Screen3
+import com.example.macc_app.ui.theme.CarouselAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            Macc_appTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            CarouselAppTheme {
+                val navController = rememberNavController()
+                AppContent(navController)
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun AppContent(navController: NavHostController) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Top Section: Dynamic Screens
+        Box(
+            modifier = Modifier
+                .weight(1f) // This section takes the remaining vertical space
+                .fillMaxWidth()
+        ) {
+            NavHost(
+                navController = navController,
+                startDestination = "screen1",
+                modifier = Modifier.fillMaxSize()
+            ) {
+                composable("screen1") { Screen1() }
+                composable("screen2") { Screen2() }
+                composable("screen3") { Screen3() }
+            }
+        }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Macc_appTheme {
-        Greeting("Android")
+        // Bottom Section: Buttons (Always Visible)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(onClick = { navController.navigate("screen1") }) {
+                Text("Screen 1")
+            }
+            Button(onClick = { navController.navigate("screen2") }) {
+                Text("Screen 2")
+            }
+            Button(onClick = { navController.navigate("screen3") }) {
+                Text("Screen 3")
+            }
+        }
     }
 }
