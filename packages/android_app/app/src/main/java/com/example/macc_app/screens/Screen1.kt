@@ -1,5 +1,6 @@
 package com.example.macc_app.screens
 
+import ChatViewModel
 import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
@@ -24,6 +25,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,7 +35,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
 @Composable
-fun Screen1() {
+fun Screen1(viewModel: ChatViewModel = viewModel()) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -64,6 +66,7 @@ fun Screen1() {
             .addOnSuccessListener { visionText ->
                 // Handle the recognized text
                 Toast.makeText(context, "Recognized text: ${visionText.text}", Toast.LENGTH_SHORT).show()
+                viewModel.sendMessage(visionText.text, type = MessageType.TEXT, context = context, targetLanguage = "it", timestamp = System.currentTimeMillis())
             }
             .addOnFailureListener { exception ->
                 // Handle any error

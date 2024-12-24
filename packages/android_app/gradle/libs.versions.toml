@@ -10,7 +10,11 @@ activityCompose = "1.9.3"
 composeBom = "2024.04.01"
 navigationCompose = "2.8.4"
 navigationRuntimeKtx = "2.8.4"
-playServicesMlkitTextRecognitionCommon = "19.1.0"
+translate = "17.0.3"
+firebase-bom = "32.2.0"
+mlkit-language-id = "17.0.3"
+mlkit-translate = "17.0.3"
+firebase-analytics = "21.3.0"
 
 [libraries]
 google-ml-kit = "com.google.mlkit:text-recognition:16.0.0"
@@ -36,7 +40,11 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
-play-services-mlkit-text-recognition-common = { group = "com.google.android.gms", name = "play-services-mlkit-text-recognition-common", version.ref = "playServicesMlkitTextRecognitionCommon" }
+translate = { group = "com.google.mlkit", name = "translate", version.ref = "translate" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebase-analytics" }
+mlkit-language-id = { module = "com.google.mlkit:language-id", version.ref = "mlkit-language-id" }
+mlkit-translate = { module = "com.google.mlkit:translate", version.ref = "mlkit-translate" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

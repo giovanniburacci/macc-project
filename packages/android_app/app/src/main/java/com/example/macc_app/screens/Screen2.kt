@@ -39,7 +39,7 @@ import java.io.File
 @Composable
 fun Screen2(viewModel: ChatViewModel = viewModel()) {
     val context = LocalContext.current
-    val state by viewModel.chatState.collectAsState()
+    val messages = viewModel.messages
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Messages List
@@ -49,19 +49,23 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            state.messages.forEachIndexed { index, message ->
-                val isLeft = index % 2 == 0
-                ChatBubble(message, isLeft, Modifier.align(if (isLeft) Alignment.Start else Alignment.End))
+            messages.forEachIndexed { index, message ->
+                val isTranslation = !message.textContent.value.isNullOrEmpty()
+                ChatBubble(message, isTranslation, Modifier.align(Alignment.Start), translation = false)
+                if(isTranslation) {
+                    ChatBubble(message, true, Modifier.align(Alignment.End), translation =  true)
+                }
+
             }
         }
 
         // Input Section
         MessageInput(
             onTextSend = { text, timestamp ->
-                viewModel.sendMessage(text, isAudio = false, timestamp)
+                viewModel.sendMessage(text, type = MessageType.TEXT, context = context, targetLanguage = "it", timestamp = timestamp)
             },
             onAudioSend = { audioPath, timestamp ->
-                viewModel.sendMessage(audioPath, isAudio = true, timestamp)
+                viewModel.sendMessage(audioPath, type = MessageType.AUDIO, context = context, targetLanguage = "it", timestamp = timestamp)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,7 +98,7 @@ fun findFileFromTimestamp(context: Context, timestamp: Long): File? {
 }
 
 @Composable
-fun ChatBubble(message: Message, isLeft: Boolean, modifier: Modifier = Modifier) {
+fun ChatBubble(message: Message, isLeft: Boolean, modifier: Modifier = Modifier, translation: Boolean) {
     val bubbleColor = if (isLeft) Color(0xFFD1E8E2) else Color(0xFFACE0F9)
     val cornerRadius = RoundedCornerShape(12.dp)
 
@@ -104,11 +108,17 @@ fun ChatBubble(message: Message, isLeft: Boolean, modifier: Modifier = Modifier)
             .background(bubbleColor, cornerRadius)
             .padding(12.dp)
     ) {
-        if (message.isAudio) {
-            AudioPlayer(uri = message.content, timestamp = message.timestamp)
-        } else {
-            Text(text = message.content, fontSize = 16.sp)
+        if(!translation) {
+            if (message.type === MessageType.AUDIO) {
+                AudioPlayer(uri = message.content, timestamp = message.timestamp)
+            } else {
+                Text(text = message.content, fontSize = 16.sp)
+            }
         }
+        else {
+            Text(text = message.textContent.value, fontSize = 16.sp)
+        }
+
     }
 }
 
@@ -176,6 +186,15 @@ fun MessageInput(
     }
 
     // Request permissions
+    val internetPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Toast.makeText(context, "Internet permission is required.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Request permissions
     val audioWriteFilePermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -187,6 +206,11 @@ fun MessageInput(
     LaunchedEffect(Unit) {
         micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
     }
+
+    LaunchedEffect(Unit) {
+        internetPermissionLauncher.launch(Manifest.permission.INTERNET)
+    }
+
     LaunchedEffect(Unit) {
         audioWriteFilePermissionLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
     }

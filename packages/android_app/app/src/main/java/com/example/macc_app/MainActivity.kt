@@ -1,5 +1,6 @@
 package com.example.macc_app
 
+import ChatViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,7 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,14 +28,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             CarouselAppTheme {
                 val navController = rememberNavController()
-                AppContent(navController)
+                val viewModel: ChatViewModel = viewModel()
+                val context = LocalContext.current
+                viewModel.initializeTextToSpeech(context = context)
+                AppContent(navController, viewModel)
             }
         }
     }
 }
 
 @Composable
-fun AppContent(navController: NavHostController) {
+fun AppContent(navController: NavHostController, model: ChatViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
         // Top Section: Dynamic Screens
         Box(
@@ -45,8 +51,8 @@ fun AppContent(navController: NavHostController) {
                 startDestination = "screen1",
                 modifier = Modifier.fillMaxSize()
             ) {
-                composable("screen1") { Screen1() }
-                composable("screen2") { Screen2() }
+                composable("screen1") { Screen1(model) }
+                composable("screen2") { Screen2(model) }
                 composable("screen3") { Screen3() }
             }
         }
