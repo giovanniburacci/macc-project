@@ -49,6 +49,46 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
         viewModel.initializeSpeechComponents(context)
     }
 
+
+    // Request permissions
+    val micPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Toast.makeText(context, "Microphone permission is required.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Request permissions
+    val internetPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Toast.makeText(context, "Internet permission is required.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Request permissions
+    val audioWriteFilePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Toast.makeText(context, "Write file permission is required.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+    }
+
+    LaunchedEffect(Unit) {
+        internetPermissionLauncher.launch(Manifest.permission.INTERNET)
+    }
+
+    LaunchedEffect(Unit) {
+        audioWriteFilePermissionLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         // Messages List
         LazyColumn(
