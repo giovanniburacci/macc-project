@@ -45,6 +45,10 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
     val context = LocalContext.current
     val messages = viewModel.messages
 
+    LaunchedEffect(Unit) {
+        viewModel.initializeSpeechComponents(context)
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         // Messages List
         LazyColumn(
@@ -58,14 +62,11 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     val isTranslation = message.textContent.value != "..."
                     ChatBubble(message, Modifier.align(Alignment.Start), translation = false)
-                    if(isTranslation) {
-                        ChatBubble(message, Modifier.align(Alignment.End), translation =  true)
+                    if (isTranslation) {
+                        ChatBubble(message, Modifier.align(Alignment.End), translation = true)
                     }
                 }
-
             }
-
-
         }
 
         // Input Section
@@ -73,8 +74,19 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
             onTextSend = { text, timestamp ->
                 viewModel.sendMessage(text, type = MessageType.TEXT, context = context, targetLanguage = "it", timestamp = timestamp)
             },
-            onAudioSend = { audioPath, timestamp ->
-                viewModel.sendMessage(audioPath, type = MessageType.AUDIO, context = context, targetLanguage = "it", timestamp = timestamp)
+            onSpeechStart = {
+                viewModel.startSpeechRecognition(
+                    context,
+                    onResult = { recognizedText ->
+                        viewModel.sendMessage(recognizedText, type = MessageType.TEXT, context = context, targetLanguage = "it", timestamp = System.currentTimeMillis())
+                    },
+                    onError = { error ->
+                        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                    }
+                )
+            },
+            onSpeechStop = {
+                viewModel.stopSpeechRecognition()
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -82,6 +94,7 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
         )
     }
 }
+
 
 fun findFileFromTimestamp(context: Context, timestamp: Long): File? {
     val musicDir = File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.absolutePath)
@@ -175,54 +188,12 @@ fun AudioPlayer(uri: String, timestamp: Long) {
 @Composable
 fun MessageInput(
     onTextSend: (String, Long) -> Unit,
-    onAudioSend: (String, Long) -> Unit,
+    onSpeechStart: () -> Unit,
+    onSpeechStop: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     var text by remember { mutableStateOf(TextFieldValue("")) }
-    var timestamp: Long by remember { mutableStateOf(0) }
     var isRecording by remember { mutableStateOf(false) }
-    val recorder = remember { MediaRecorder() }
-    val scope = rememberCoroutineScope()
-
-    // Request permissions
-    val micPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            Toast.makeText(context, "Microphone permission is required.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    // Request permissions
-    val internetPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            Toast.makeText(context, "Internet permission is required.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    // Request permissions
-    val audioWriteFilePermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            Toast.makeText(context, "Write file permission is required.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-    }
-
-    LaunchedEffect(Unit) {
-        internetPermissionLauncher.launch(Manifest.permission.INTERNET)
-    }
-
-    LaunchedEffect(Unit) {
-        audioWriteFilePermissionLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
-    }
 
     Row(
         modifier = modifier
@@ -257,44 +228,20 @@ fun MessageInput(
         Button(
             onClick = {
                 if (!isRecording) {
-                    // Start recording
-                    timestamp = System.currentTimeMillis()
-                    val audioFile = File(
-                        context.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
-                        "recording_${timestamp}.mp3"
-                    )
-                    recorder.apply {
-                        setAudioSource(MediaRecorder.AudioSource.MIC)
-                        setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-                        setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                        setOutputFile(audioFile.absolutePath)
-                        prepare()
-                        start()
-                    }
-                    isRecording = true
+                    onSpeechStart()
                 } else {
-                    // Stop recording and send
-                    recorder.stop()
-                    recorder.reset()
-                    isRecording = false
-                    scope.launch(Dispatchers.IO) {
-                        onAudioSend(
-                            File(
-                                context.getExternalFilesDir(Environment.DIRECTORY_MUSIC),
-                                "recording_${timestamp}.mp3"
-                            ).absolutePath,
-                            timestamp
-                        )
-                    }
+                    onSpeechStop()
                 }
+                isRecording = !isRecording
             },
             modifier = Modifier
                 .align(Alignment.CenterVertically)
                 .background(if (isRecording) Color.Red else Color.Gray, CircleShape)
                 .padding(12.dp)
         ) {
-            Icon(imageVector = androidx.compose.material.icons.Icons.Filled.Add, contentDescription = null)
+            Text(if (isRecording) "Stop" else "Talk")
         }
     }
 }
+
 

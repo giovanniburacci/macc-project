@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val viewModel: ChatViewModel = viewModel()
                 val context = LocalContext.current
-                viewModel.initializeTextToSpeech(context = context)
+                viewModel.initializeSpeechComponents(context = context)
                 AppContent(navController, viewModel)
             }
         }

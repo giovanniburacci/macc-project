@@ -15,15 +15,14 @@ import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import java.util.*
 
-class ChatViewModel : ViewModel() {
+class OldChatViewModel : ViewModel() {
 
     private val _messages = mutableStateListOf<Message>()
     val messages: List<Message> get() = _messages
 
     private var textToSpeech: TextToSpeech? = null
     private var recognizer: SpeechRecognizer? = null
-
-    fun initializeSpeechComponents(context: Context) {
+    fun initializeTextToSpeech(context: Context) {
         textToSpeech = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 textToSpeech?.language = Locale.getDefault()
@@ -66,8 +65,10 @@ class ChatViewModel : ViewModel() {
 
         val translator = Translation.getClient(options)
 
+        // Download the translation model if needed
         translator.downloadModelIfNeeded()
             .addOnSuccessListener {
+                // Perform translation
                 translator.translate(message.content)
                     .addOnSuccessListener { translatedText ->
                         message.textContent.value = translatedText
@@ -92,9 +93,14 @@ class ChatViewModel : ViewModel() {
                 Log.d("SpeechRecognition", "Speech beginning")
             }
 
-            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onRmsChanged(rmsdB: Float) {
+                // This is called when the sound level in the room changes.
+                // You can leave this empty if not needed.
+            }
 
-            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onBufferReceived(buffer: ByteArray?) {
+                // Called when more sound is received. You can leave this empty if not needed.
+            }
 
             override fun onEndOfSpeech() {
                 Log.d("SpeechRecognition", "Speech ended")
@@ -116,65 +122,24 @@ class ChatViewModel : ViewModel() {
                 }
             }
 
-            override fun onPartialResults(partialResults: Bundle?) {}
 
-            override fun onEvent(eventType: Int, params: Bundle?) {}
+            override fun onPartialResults(partialResults: Bundle?) {
+                // Handle partial recognition results if needed
+            }
+
+            override fun onEvent(eventType: Int, params: Bundle?) {
+                // Handle specific events if needed
+            }
         })
 
         val audioUri = Uri.parse(audioPath)
         val audioIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         audioIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        recognizer?.startListening(audioIntent)
-    }
-
-    fun startSpeechRecognition(context: Context, onResult: (String) -> Unit, onError: (String) -> Unit) {
-        recognizer?.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {
-                Log.d("SpeechRecognition", "Ready for speech")
-            }
-
-            override fun onBeginningOfSpeech() {
-                Log.d("SpeechRecognition", "Speech beginning")
-            }
-
-            override fun onRmsChanged(rmsdB: Float) {}
-
-            override fun onBufferReceived(buffer: ByteArray?) {}
-
-            override fun onEndOfSpeech() {
-                Log.d("SpeechRecognition", "Speech ended")
-            }
-
-            override fun onError(error: Int) {
-                Log.e("SpeechRecognition", "Error occurred: $error")
-                onError("Speech recognition error: $error")
-            }
-
-            override fun onResults(results: Bundle?) {
-                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                val text = matches?.joinToString(separator = " ") ?: "No speech recognized"
-                onResult(text)
-            }
-
-            override fun onPartialResults(partialResults: Bundle?) {}
-
-            override fun onEvent(eventType: Int, params: Bundle?) {}
-        })
-
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-        }
-        recognizer?.startListening(intent)
-    }
-
-    fun stopSpeechRecognition() {
-        recognizer?.stopListening()
+        this.recognizer?.startListening(audioIntent)
     }
 
     override fun onCleared() {
         super.onCleared()
         textToSpeech?.shutdown()
-        recognizer?.destroy()
     }
 }
