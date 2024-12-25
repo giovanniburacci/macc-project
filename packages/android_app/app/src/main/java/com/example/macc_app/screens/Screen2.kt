@@ -12,12 +12,16 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -43,20 +47,25 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Messages List
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .padding(16.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            userScrollEnabled = true
         ) {
-            messages.forEachIndexed { index, message ->
-                val isTranslation = !message.textContent.value.isNullOrEmpty()
-                ChatBubble(message, isTranslation, Modifier.align(Alignment.Start), translation = false)
-                if(isTranslation) {
-                    ChatBubble(message, true, Modifier.align(Alignment.End), translation =  true)
+            itemsIndexed(messages) { index, message ->
+                Column(modifier = Modifier.fillMaxSize()) {
+                    val isTranslation = message.textContent.value != "..."
+                    ChatBubble(message, Modifier.align(Alignment.Start), translation = false)
+                    if(isTranslation) {
+                        ChatBubble(message, Modifier.align(Alignment.End), translation =  true)
+                    }
                 }
 
             }
+
+
         }
 
         // Input Section
@@ -98,8 +107,8 @@ fun findFileFromTimestamp(context: Context, timestamp: Long): File? {
 }
 
 @Composable
-fun ChatBubble(message: Message, isLeft: Boolean, modifier: Modifier = Modifier, translation: Boolean) {
-    val bubbleColor = if (isLeft) Color(0xFFD1E8E2) else Color(0xFFACE0F9)
+fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boolean) {
+    val bubbleColor = if (translation) Color(0xFFD1E8E2) else Color(0xFFACE0F9)
     val cornerRadius = RoundedCornerShape(12.dp)
 
     Box(
