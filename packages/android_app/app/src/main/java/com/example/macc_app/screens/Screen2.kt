@@ -14,6 +14,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -23,6 +24,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -30,12 +32,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.macc_app.SensorView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
@@ -44,6 +49,9 @@ import java.io.File
 fun Screen2(viewModel: ChatViewModel = viewModel()) {
     val context = LocalContext.current
     val messages = viewModel.messages
+
+    var showPopup by remember { mutableStateOf(false) }
+    var chatBubbleText by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.initializeSpeechComponents(context)
@@ -101,12 +109,47 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
             itemsIndexed(messages) { index, message ->
                 Column(modifier = Modifier.fillMaxSize()) {
                     val isTranslation = message.textContent.value != "..."
-                    ChatBubble(message, Modifier.align(Alignment.Start), translation = false)
+                    ChatBubble(
+                        message,
+                        Modifier.align(Alignment.Start),
+                        translation = false,
+                        onLongPress = { selectedText ->
+                            showPopup = true
+                            chatBubbleText = selectedText
+                        }
+                    )
                     if (isTranslation) {
-                        ChatBubble(message, Modifier.align(Alignment.End), translation = true)
+                        ChatBubble(
+                            message,
+                            Modifier.align(Alignment.End),
+                            translation = true,
+                            onLongPress = { selectedText ->
+                                showPopup = true
+                                chatBubbleText = selectedText
+                            }
+                        )
                     }
                 }
+
             }
+        }
+
+        if (showPopup) {
+            AlertDialog(
+                onDismissRequest = { showPopup = false },
+                title = { Text("2D text view") },
+                text = {
+                    AndroidView(
+                        factory = { context ->
+                            SensorView(context, chatBubbleText)
+                        }
+                    ) },
+                confirmButton = {
+                    Button(onClick = { showPopup = false }) {
+                        Text("OK")
+                    }
+                }
+            )
         }
 
         // Input Section
@@ -135,7 +178,6 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
     }
 }
 
-
 fun findFileFromTimestamp(context: Context, timestamp: Long): File? {
     val musicDir = File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.absolutePath)
     if (musicDir.exists()) {
@@ -160,7 +202,7 @@ fun findFileFromTimestamp(context: Context, timestamp: Long): File? {
 }
 
 @Composable
-fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boolean) {
+fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boolean, onLongPress: (String) -> Unit) {
     val bubbleColor = if (translation) Color(0xFFD1E8E2) else Color(0xFFACE0F9)
     val cornerRadius = RoundedCornerShape(12.dp)
 
@@ -169,6 +211,13 @@ fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boo
             .padding(vertical = 4.dp)
             .background(bubbleColor, cornerRadius)
             .padding(12.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        onLongPress(if(!translation) message.content else message.textContent.value) // Trigger the lambda when long-pressed
+                    }
+                )
+            }
     ) {
         if(!translation) {
             if (message.type === MessageType.AUDIO) {
@@ -283,5 +332,4 @@ fun MessageInput(
         }
     }
 }
-
 

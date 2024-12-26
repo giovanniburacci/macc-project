@@ -15,6 +15,7 @@ firebase-bom = "32.2.0"
 mlkit-language-id = "17.0.3"
 mlkit-translate = "17.0.3"
 firebase-analytics = "21.3.0"
+languageIdCommon = "16.1.0"
 
 [libraries]
 google-ml-kit = "com.google.mlkit:text-recognition:16.0.0"
@@ -45,6 +46,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebase-analytics" }
 mlkit-language-id = { module = "com.google.mlkit:language-id", version.ref = "mlkit-language-id" }
 mlkit-translate = { module = "com.google.mlkit:translate", version.ref = "mlkit-translate" }
+language-id-common = { group = "com.google.mlkit", name = "language-id-common", version.ref = "languageIdCommon" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
