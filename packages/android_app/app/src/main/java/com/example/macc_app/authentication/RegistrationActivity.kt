@@ -11,7 +11,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.macc_app.MainActivity
 import com.example.macc_app.R
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.database
 
 class RegistrationActivity : AppCompatActivity() {
     private lateinit var username: EditText
@@ -22,6 +25,7 @@ class RegistrationActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseDatabase
 
     companion object {
         private const val EMPTY_USERNAME_MESSAGE = "Please enter username!"
@@ -30,6 +34,8 @@ class RegistrationActivity : AppCompatActivity() {
         private const val PASSWORD_NOT_MATCH_MESSAGE = "Password does not match!"
         private const val REGISTRATION_SUCCESSFUL_MESSAGE = "Registration successful!"
         private const val REGISTRATION_FAILED_MESSAGE = "Registration failed!"
+
+        private const val DB_URL = "https://macc-project-bf2f7-default-rtdb.europe-west1.firebasedatabase.app/"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,9 +100,26 @@ class RegistrationActivity : AppCompatActivity() {
                 // Hide the progress bar
                 progressBar.visibility = View.GONE
 
-                // If sign-up is successful intent to home activity
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
+                // Save user data in db
+                db = Firebase.database(DB_URL)
+
+                val user = User(username, email)
+                val uid = auth.currentUser!!.uid
+
+                db.getReference("users/$uid").setValue(user)
+                    .addOnSuccessListener {
+                        // If sign-up is successful and user data is saved in db, intent to home activity
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                    }
+                    .addOnFailureListener {
+                        // If save fails
+                        Toast.makeText(applicationContext, REGISTRATION_FAILED_MESSAGE,
+                            Toast.LENGTH_LONG).show()
+
+                        // Hide the progress bar
+                        progressBar.visibility = View.GONE
+                    }
             }
             .addOnFailureListener {
                 // If sign-up fails

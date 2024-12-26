@@ -18,6 +18,7 @@ firebase-analytics = "21.3.0"
 languageIdCommon = "16.1.0"
 
 [libraries]
+firebase-database = { module = "com.google.firebase:firebase-database" }
 google-ml-kit = "com.google.mlkit:text-recognition:16.0.0"
 androidx-camera-core = "androidx.camera:camera-core:1.4.0"
 androidx-camera-camera2 = "androidx.camera:camera-camera2:1.4.0"
