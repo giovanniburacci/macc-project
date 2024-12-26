@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "234297104123",
+    "project_id": "macc-project-bf2f7",
+    "storage_bucket": "macc-project-bf2f7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234297104123:android:d08905f843f5e3b31d825e",
+        "android_client_info": {
+          "package_name": "com.example.macc_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoKhT70X0L8wXs61sF_8CHnx23K_09Sw4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Linear Layout with vertical orientation and other properties -->
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:padding="15dp"
+    tools:context=".authentication.RegistrationActivity">
+
+    <!-- TextView for heading -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Registration"/>
+
+    <!-- Edit text for username -->
+    <EditText
+        android:id="@+id/username"
+        android:layout_width="320dp"
+        android:layout_height="48dp"
+        android:hint="Enter your Username"
+        android:inputType="text" />
+
+    <!-- Edit text for email -->
+    <EditText
+        android:id="@+id/email"
+        android:layout_width="320dp"
+        android:layout_height="48dp"
+        android:hint="Enter your Email"
+        android:inputType="textEmailAddress" />
+
+    <!-- Edit text for password -->
+    <EditText
+        android:id="@+id/password"
+        android:layout_width="320dp"
+        android:layout_height="48dp"
+        android:hint="Enter your Password"
+        android:inputType="textPassword" />
+
+    <!-- Edit text for confirm password -->
+    <EditText
+        android:id="@+id/confirmPassword"
+        android:layout_width="320dp"
+        android:layout_height="48dp"
+        android:hint="Repeat your Password"
+        android:inputType="textPassword" />
+
+    <!-- Button for Login with text "Register" -->
+    <Button
+        android:id="@+id/register"
+        android:layout_width="320dp"
+        android:layout_height="48dp"
+        android:text="Register" />
+
+    <!-- ProgressBar for Loading Time -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+</LinearLayout>
