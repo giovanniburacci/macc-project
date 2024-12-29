@@ -47,6 +47,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -152,7 +153,7 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
     ) { uri: Uri? ->
         // Handle gallery selection
         uri?.let { imageUri ->
-            coroutineScope.launch {
+            coroutineScope.launch(Dispatchers.IO) {
                 // Convert URI to Bitmap and perform text recognition
                 val bitmap = getBitmapFromUri(imageUri, context)
                 recognizeTextFromBitmap(bitmap, context)
@@ -206,7 +207,7 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
         // Take Picture Button
         Button(
             onClick = {
-                coroutineScope.launch {
+                coroutineScope.launch(Dispatchers.IO) {
                     try {
                         val bitmap = takePicture(context, imageCapture)
                         // Perform text recognition on the captured Bitmap

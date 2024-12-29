@@ -1,21 +1,27 @@
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 class ChatViewModel : ViewModel() {
 
@@ -41,138 +47,142 @@ class ChatViewModel : ViewModel() {
         val message = Message(isSender = true, originalContent = content, timestamp = timestamp)
         _messages.add(message)
 
-        if (type == MessageType.TEXT) {
-            processTextMessage(message, targetLanguage)
-        } else if (type == MessageType.AUDIO) {
-            transcribeAudio(message, targetLanguage)
+        viewModelScope.launch {
+            if (type == MessageType.TEXT) {
+                processTextMessage(message, targetLanguage)
+            } else if (type == MessageType.AUDIO) {
+                transcribeAudio(message, targetLanguage)
+            }
         }
     }
 
     private fun processTextMessage(message: Message, targetLanguage: String) {
-        val languageIdentifier = LanguageIdentification.getClient()
-        languageIdentifier.identifyLanguage(message.originalContent)
-            .addOnSuccessListener { languageCode ->
-                if (languageCode == "und") {
-                    Log.e("ChatViewModel", "Language not identified")
-                } else {
+        viewModelScope.launch {
+            try {
+                val languageCode = identifyLanguage(message.originalContent)
+                if (languageCode != "und") {
                     translateText(message, languageCode, targetLanguage)
+                } else {
+                    Log.e("ChatViewModel", "Language not identified")
                 }
-            }
-            .addOnFailureListener { e ->
+            } catch (e: Exception) {
                 Log.e("ChatViewModel", "Language identification failed", e)
             }
+        }
     }
 
-    private fun translateText(message: Message, sourceLanguage: String, targetLanguage: String) {
-        val options = TranslatorOptions.Builder()
-            .setSourceLanguage(TranslateLanguage.fromLanguageTag(sourceLanguage) ?: TranslateLanguage.ENGLISH)
-            .setTargetLanguage(TranslateLanguage.fromLanguageTag(targetLanguage) ?: TranslateLanguage.ENGLISH)
-            .build()
+    private suspend fun identifyLanguage(text: String): String = withContext(Dispatchers.IO) {
+        suspendCancellableCoroutine { continuation ->
+            val languageIdentifier = LanguageIdentification.getClient()
+            languageIdentifier.identifyLanguage(text)
+                .addOnSuccessListener { languageCode ->
+                    continuation.resume(languageCode)
+                }
+                .addOnFailureListener { e ->
+                    continuation.resumeWithException(e)
+                }
+        }
+    }
 
-        val translator = Translation.getClient(options)
+    private suspend fun translateText(message: Message, sourceLanguage: String, targetLanguage: String) {
+        withContext(Dispatchers.IO) {
+            val options = TranslatorOptions.Builder()
+                .setSourceLanguage(TranslateLanguage.fromLanguageTag(sourceLanguage) ?: TranslateLanguage.ENGLISH)
+                .setTargetLanguage(TranslateLanguage.fromLanguageTag(targetLanguage) ?: TranslateLanguage.ENGLISH)
+                .build()
 
-        translator.downloadModelIfNeeded()
-            .addOnSuccessListener {
-                translator.translate(message.originalContent)
-                    .addOnSuccessListener { translatedText ->
-                        message.translatedContent.value = translatedText
-                        Log.d("ChatViewModel", "Translated text: $translatedText")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("ChatViewModel", "Translation failed", e)
-                    }
+            val translator = Translation.getClient(options)
+
+            try {
+                translator.downloadModelIfNeeded().await()
+                val translatedText = translator.translate(message.originalContent).await()
+                withContext(Dispatchers.Main) {
+                    message.translatedContent.value = translatedText
+                    Log.d("ChatViewModel", "Translated text: $translatedText")
+                }
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Translation failed", e)
             }
-            .addOnFailureListener { e ->
-                Log.e("ChatViewModel", "Model download failed", e)
-            }
+        }
     }
 
     private fun transcribeAudio(message: Message, targetLanguage: String) {
-        recognizer?.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {
-                Log.d("SpeechRecognition", "Ready for speech")
-            }
-
-            override fun onBeginningOfSpeech() {
-                Log.d("SpeechRecognition", "Speech beginning")
-            }
-
-            override fun onRmsChanged(rmsdB: Float) {}
-
-            override fun onBufferReceived(buffer: ByteArray?) {}
-
-            override fun onEndOfSpeech() {
-                Log.d("SpeechRecognition", "Speech ended")
-            }
-
-            override fun onError(error: Int) {
-                Log.e("SpeechRecognition", "Error occurred: $error")
-            }
-
-            override fun onResults(results: Bundle?) {
-                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                val text = matches?.joinToString(separator = " ") ?: "No speech recognized"
-
+        viewModelScope.launch {
+            try {
+                val text = recognizeSpeech()
                 if (text.isNotEmpty()) {
                     message.translatedContent.value = text
                     processTextMessage(message, targetLanguage)
                 } else {
                     Log.e("SpeechRecognition", "No recognizable speech")
                 }
+            } catch (e: Exception) {
+                Log.e("SpeechRecognition", "Error during speech recognition", e)
             }
-
-            override fun onPartialResults(partialResults: Bundle?) {}
-
-            override fun onEvent(eventType: Int, params: Bundle?) {}
-        })
-
-        val audioIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-        audioIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        recognizer?.startListening(audioIntent)
+        }
     }
 
-    fun startSpeechRecognition(context: Context, onResult: (String) -> Unit, onError: (String) -> Unit) {
-        recognizer?.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {
-                Log.d("SpeechRecognition", "Ready for speech")
+    private suspend fun recognizeSpeech(): String = withContext(Dispatchers.Main) {
+        suspendCancellableCoroutine { continuation ->
+            val listener = object : RecognitionListener {
+                override fun onReadyForSpeech(params: Bundle?) {
+                    Log.d("SpeechRecognition", "Ready for speech")
+                }
+
+                override fun onBeginningOfSpeech() {
+                    Log.d("SpeechRecognition", "Speech beginning")
+                }
+
+                override fun onRmsChanged(rmsdB: Float) {}
+
+                override fun onBufferReceived(buffer: ByteArray?) {}
+
+                override fun onEndOfSpeech() {
+                    Log.d("SpeechRecognition", "Speech ended")
+                }
+
+                override fun onError(error: Int) {
+                    Log.e("SpeechRecognition", "Error occurred: $error")
+                    continuation.resumeWithException(RuntimeException("Speech recognition error: $error"))
+                }
+
+                override fun onResults(results: Bundle?) {
+                    val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    val text = matches?.joinToString(separator = " ") ?: ""
+                    continuation.resume(text)
+                }
+
+                override fun onPartialResults(partialResults: Bundle?) {}
+
+                override fun onEvent(eventType: Int, params: Bundle?) {}
             }
 
-            override fun onBeginningOfSpeech() {
-                Log.d("SpeechRecognition", "Speech beginning")
+            recognizer?.setRecognitionListener(listener)
+
+            val audioIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             }
+            recognizer?.startListening(audioIntent)
 
-            override fun onRmsChanged(rmsdB: Float) {}
-
-            override fun onBufferReceived(buffer: ByteArray?) {}
-
-            override fun onEndOfSpeech() {
-                Log.d("SpeechRecognition", "Speech ended")
+            continuation.invokeOnCancellation {
+                recognizer?.stopListening()
+                recognizer?.cancel()
             }
+        }
+    }
 
-            override fun onError(error: Int) {
-                Log.e("SpeechRecognition", "Error occurred: $error")
-                onError("Speech recognition error: $error")
-            }
-
-            override fun onResults(results: Bundle?) {
-                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                val text = matches?.joinToString(separator = " ") ?: ""
-                if(text.isNotEmpty()) {
+    fun startSpeechRecognition(onError: (String) -> Unit) {
+        viewModelScope.launch(Dispatchers.Main) {
+            try {
+                val text = recognizeSpeech()
+                if (text.isNotEmpty()) {
                     showConfirmationPopup.value = true
                     lastMessage.value = Message(isSender = true, originalContent = text, timestamp = System.currentTimeMillis())
                 }
+            } catch (e: Exception) {
+                onError(e.message ?: "Unknown error")
             }
-
-            override fun onPartialResults(partialResults: Bundle?) {}
-
-            override fun onEvent(eventType: Int, params: Bundle?) {}
-        })
-
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
         }
-        recognizer?.startListening(intent)
     }
 
     fun stopSpeechRecognition() {

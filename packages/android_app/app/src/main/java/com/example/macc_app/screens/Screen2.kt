@@ -232,15 +232,6 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
                     },
                     onSpeechStart = {
                         viewModel.startSpeechRecognition(
-                            context,
-                            onResult = { recognizedText ->
-                                viewModel.sendMessage(
-                                    recognizedText,
-                                    type = MessageType.TEXT,
-                                    targetLanguage = "it",
-                                    timestamp = System.currentTimeMillis()
-                                )
-                            },
                             onError = { error ->
                                 Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
                             }
