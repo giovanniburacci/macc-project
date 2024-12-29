@@ -17,8 +17,11 @@ import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
-class SensorView(context: Context, text: String): View(context),SensorEventListener2 {
+class SensorView(context: Context, text: String, pitchEnabled: Boolean, rollEnabled: Boolean, yawEnabled: Boolean): View(context),SensorEventListener2 {
     private val textToDraw: String = text
+    private val pitchEnabled: Boolean = pitchEnabled
+    private val rollEnabled: Boolean = rollEnabled
+    private val yawEnabled: Boolean = yawEnabled
 
     private val camera = Camera()
 
@@ -105,17 +108,17 @@ class SensorView(context: Context, text: String): View(context),SensorEventListe
 
         camera.save()
         //camera.translate(width / 2f, height / 2f, 0f)
-        camera.rotateX(pitch) // Apply pitch rotation
-        camera.rotateY(roll) // Apply roll rotation
-        camera.rotateZ(yaw) // Apply yaw rotation
+        if(pitchEnabled) camera.rotateX(pitch) // Apply pitch rotation
+        if(rollEnabled) camera.rotateY(roll) // Apply roll rotation
+        if(yawEnabled) camera.rotateZ(yaw) // Apply yaw rotation
         //camera.translate(-width / 2f, -height / 2f, 0f)
         camera.getMatrix(M2) // Get the transformation matrix
         camera.restore()
 
         with(canvas) {
-            drawText("PITCH: "+pitch.toString(),100f,40f,textPaint)
-            drawText("ROLL: "+roll.toString(),100f,80f,textPaint)
-            drawText("YAW: "+yaw.toString(),100f,120f,textPaint)
+            if(pitchEnabled) drawText("PITCH: "+pitch.toString(),0f,40f,textPaint)
+            if(rollEnabled) drawText("ROLL: "+roll.toString(),0f,80f,textPaint)
+            if(yawEnabled) drawText("YAW: "+yaw.toString(),0f,120f,textPaint)
             /*drawText("FPS: "+fps,100f,80f,textPaint)
             drawText("UPS: "+ups,100f,120f,textPaint)*/
             with(canvas) {
@@ -125,29 +128,8 @@ class SensorView(context: Context, text: String): View(context),SensorEventListe
                     }
                 }
             }
-            /*withMatrix(M.apply {  }) {
-                //drawLine(0f,0f,0f,canvas.width/3f,paint)
-
-                withMatrix(M2.apply {
-                    setRotate(pitch,0f,0f)
-                    setRotate(roll,0f,0f)
-                    }) {
-                    drawText(textToDraw, 0f,width/3f,textPaint)
-                }
-                //
-            }*/
         }
 
-        /*camera.save()
-        camera.rotateX(pitch) // Apply pitch rotation
-        camera.rotateY(roll) // Apply roll rotation
-        camera.rotateZ(yaw) // Apply yaw rotation
-        camera.getMatrix(matrix) // Get the transformation matrix
-        camera.restore()
-
-        canvas.concat(matrix) // Apply the transformation to the canvas
-
-        canvas.drawText(textToDraw, x, y, textPaint) // Draw the text*/
         invalidate()
     }
 }

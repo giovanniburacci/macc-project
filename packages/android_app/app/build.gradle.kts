@@ -66,7 +66,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.database)
-
+    implementation("androidx.compose.animation:animation:1.7.6")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
