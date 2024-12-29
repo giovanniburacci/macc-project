@@ -3,16 +3,13 @@ import androidx.compose.runtime.State
 
 data class Message(
     val isSender: Boolean,
-    val type: MessageType,
-    val content: String,
+    val originalContent: String,
     val timestamp: Long,
-    private val _textContent: String = "..." // default to content
+    private val _translatedContent: String = "..." // default to content
 ) {
-    var textContent = mutableStateOf(_textContent)
-        private set // Only allow internal updates to this property
+    var translatedContent = mutableStateOf(_translatedContent)
+        private set
 
-    // You can also expose a read-only property if needed:
-    val text: State<String> get() = textContent
 }
 
 enum class MessageType {

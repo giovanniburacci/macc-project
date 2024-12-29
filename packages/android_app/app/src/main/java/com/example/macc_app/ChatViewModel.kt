@@ -7,7 +7,9 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.nl.translate.TranslateLanguage
@@ -19,6 +21,9 @@ class ChatViewModel : ViewModel() {
 
     private val _messages = mutableStateListOf<Message>()
     val messages: List<Message> get() = _messages
+
+    val showConfirmationPopup = mutableStateOf(false)
+    val lastMessage = mutableStateOf<Message?>(null)
 
     private var textToSpeech: TextToSpeech? = null
     private var recognizer: SpeechRecognizer? = null
@@ -32,20 +37,20 @@ class ChatViewModel : ViewModel() {
         recognizer = SpeechRecognizer.createSpeechRecognizer(context)
     }
 
-    fun sendMessage(content: String, type: MessageType, context: Context, targetLanguage: String, timestamp: Long) {
-        val message = Message(isSender = true, type = type, content = content, timestamp = timestamp)
+    fun sendMessage(content: String, type: MessageType, targetLanguage: String, timestamp: Long) {
+        val message = Message(isSender = true, originalContent = content, timestamp = timestamp)
         _messages.add(message)
 
         if (type == MessageType.TEXT) {
             processTextMessage(message, targetLanguage)
         } else if (type == MessageType.AUDIO) {
-            transcribeAudio(content, message, context, targetLanguage)
+            transcribeAudio(message, targetLanguage)
         }
     }
 
     private fun processTextMessage(message: Message, targetLanguage: String) {
         val languageIdentifier = LanguageIdentification.getClient()
-        languageIdentifier.identifyLanguage(message.content)
+        languageIdentifier.identifyLanguage(message.originalContent)
             .addOnSuccessListener { languageCode ->
                 if (languageCode == "und") {
                     Log.e("ChatViewModel", "Language not identified")
@@ -68,9 +73,9 @@ class ChatViewModel : ViewModel() {
 
         translator.downloadModelIfNeeded()
             .addOnSuccessListener {
-                translator.translate(message.content)
+                translator.translate(message.originalContent)
                     .addOnSuccessListener { translatedText ->
-                        message.textContent.value = translatedText
+                        message.translatedContent.value = translatedText
                         Log.d("ChatViewModel", "Translated text: $translatedText")
                     }
                     .addOnFailureListener { e ->
@@ -82,7 +87,7 @@ class ChatViewModel : ViewModel() {
             }
     }
 
-    private fun transcribeAudio(audioPath: String, message: Message, context: Context, targetLanguage: String) {
+    private fun transcribeAudio(message: Message, targetLanguage: String) {
         recognizer?.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
                 Log.d("SpeechRecognition", "Ready for speech")
@@ -109,7 +114,7 @@ class ChatViewModel : ViewModel() {
                 val text = matches?.joinToString(separator = " ") ?: "No speech recognized"
 
                 if (text.isNotEmpty()) {
-                    message.textContent.value = text
+                    message.translatedContent.value = text
                     processTextMessage(message, targetLanguage)
                 } else {
                     Log.e("SpeechRecognition", "No recognizable speech")
@@ -121,7 +126,6 @@ class ChatViewModel : ViewModel() {
             override fun onEvent(eventType: Int, params: Bundle?) {}
         })
 
-        val audioUri = Uri.parse(audioPath)
         val audioIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         audioIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
         recognizer?.startListening(audioIntent)
@@ -152,8 +156,11 @@ class ChatViewModel : ViewModel() {
 
             override fun onResults(results: Bundle?) {
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                val text = matches?.joinToString(separator = " ") ?: "No speech recognized"
-                onResult(text)
+                val text = matches?.joinToString(separator = " ") ?: ""
+                if(text.isNotEmpty()) {
+                    showConfirmationPopup.value = true
+                    lastMessage.value = Message(isSender = true, originalContent = text, timestamp = System.currentTimeMillis())
+                }
             }
 
             override fun onPartialResults(partialResults: Bundle?) {}

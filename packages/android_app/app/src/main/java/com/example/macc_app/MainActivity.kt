@@ -51,7 +51,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                 startDestination = "screen1",
                 modifier = Modifier.fillMaxSize()
             ) {
-                composable("screen1") { Screen1(model) }
+                composable("screen1") { Screen1(model, navController) }
                 composable("screen2") { Screen2(model) }
                 composable("screen3") { Screen3() }
             }
