@@ -5,7 +5,6 @@ import android.Manifest
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -26,7 +25,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.macc_app.SensorView
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.darkColorScheme
 import com.example.macc_app.components.ChatBubble
 import com.example.macc_app.components.ExplanationBox
 import com.example.macc_app.components.MessageInput
