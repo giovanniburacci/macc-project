@@ -25,8 +25,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,10 +42,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.macc_app.components.RecognizedTextDialog
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -188,8 +196,6 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
 
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
         ) {
             AndroidView(
                 factory = { ctx ->
@@ -200,40 +206,52 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
                 },
                 modifier = Modifier.fillMaxSize()
             )
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom=12.dp),
+                contentAlignment = Alignment.BottomCenter // Align buttons at the bottom center,
+            ) {
 
-        // Take Picture Button
-        Button(
-            onClick = {
-                coroutineScope.launch(Dispatchers.IO) {
-                    try {
-                        val bitmap = takePicture(context, imageCapture)
-                        // Perform text recognition on the captured Bitmap
-                        recognizeTextFromBitmap(bitmap, context)
-                    } catch (e: Exception) {
-                        // Handle errors, e.g., camera not ready or failed to capture image
-                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
+                // Take Picture Button
+                FloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch(Dispatchers.IO) {
+                            try {
+                                val bitmap = takePicture(context, imageCapture)
+                                // Perform text recognition on the captured Bitmap
+                                recognizeTextFromBitmap(bitmap, context)
+                            } catch (e: Exception) {
+                                // Handle errors, e.g., camera not ready or failed to capture image
+                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                    },
+                    modifier = Modifier.offset(x = -90.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PlayArrow,
+                        contentDescription = "Open Camera",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Take Picture")
+                Spacer(modifier = Modifier.height(8.dp))
+                // Upload from Gallery Button
+                FloatingActionButton(
+                    onClick = {
+                        galleryLauncher.launch("image/*")
+                    },
+                    modifier = Modifier.offset(x = 90.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Menu,
+                        contentDescription = "Open Gallery",
+                        tint = MaterialTheme.colorScheme.primary
+                    )                }
+            }
+
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Upload from Gallery Button
-        Button(
-            onClick = {
-                galleryLauncher.launch("image/*")
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Upload from Gallery")
-        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -266,84 +284,6 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(context, "Failed to initialize camera: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-}
-
-
-@Composable
-fun RecognizedTextDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    showDialog: Boolean,
-    text: String
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.Black.copy(alpha = 0.6f)) // Dim background
-            .clickable { onDismiss() } // Dismiss when clicking outside the box
-            .animateContentSize()
-    ) {
-        AnimatedVisibility(
-            visible = showDialog,
-            enter = fadeIn(tween(durationMillis = 500)), // Fade-in animation
-            exit = fadeOut(tween(durationMillis = 500))  // Fade-out if dismissed
-        ) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(16.dp)
-                    .background(color = Color.White, shape = RoundedCornerShape(8.dp))
-                    .padding(16.dp) // Padding inside the box
-                    .alpha(
-                        animateFloatAsState(
-                            if (showDialog) 1f else 0f, animationSpec = tween(durationMillis = 2000),
-                            label = ""
-                        ).value
-                    ) // Smooth fade-in effect
-            ) {
-                AlertDialog(
-                    onDismissRequest = { onDismiss() },
-                    title = { Text("How to use 2D") },
-                    icon = {
-                    },
-                    text = {
-                        Column {
-                            Row (modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "This is the recognized text: ",
-                                    modifier = Modifier.padding(bottom = 16.dp)
-                                )
-                            }
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(text)
-                            }
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Would you like to translate it?")
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        Button(onClick = { onConfirm() }) {
-                            Text("Translate")
-                        }
-                    },
-                    dismissButton = {
-                        Button(onClick = {onDismiss()}) {
-                            Text("Discard")
-                        }
-                    }
-                )
             }
         }
     }
