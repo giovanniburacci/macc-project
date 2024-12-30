@@ -1,9 +1,5 @@
 package com.example.macc_app.components
 
-import android.app.Activity
-import android.content.Context
-import android.view.View
-import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,10 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,9 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.getSystemService
+import com.example.macc_app.R
 
 
 @Composable
@@ -89,7 +82,7 @@ fun MessageInput(
             enabled = (!showExplanation && !showConfirmationPopup)
         ) {
             Icon(
-                imageVector = Icons.Filled.Send,
+                painter = painterResource(R.drawable.baseline_send_24),
                 contentDescription = "Send message",
                 tint = sendIconColor
             )
@@ -114,7 +107,7 @@ fun MessageInput(
             enabled = (!showExplanation && !showConfirmationPopup)
         ) {
             Icon(
-                imageVector = if (isRecording) Icons.Filled.Phone else Icons.Outlined.Phone,
+                painter = if (isRecording) painterResource(R.drawable.baseline_mic_24) else painterResource(R.drawable.baseline_mic_none_24),
                 contentDescription = if (isRecording) "Stop recording" else "Start recording",
                 tint = micIconColor
             )

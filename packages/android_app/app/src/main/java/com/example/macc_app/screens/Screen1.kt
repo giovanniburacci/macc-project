@@ -16,9 +16,6 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,12 +24,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.macc_app.R
 import com.example.macc_app.components.RecognizedTextDialog
 import java.io.File
 import java.text.SimpleDateFormat
@@ -56,7 +55,7 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
     val coroutineScope = rememberCoroutineScope() // Get the coroutine scope
 
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
-    var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val capturedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     var showRecognizedTextDialog by remember { mutableStateOf<Boolean>(false) }
     var recognizedText by remember { mutableStateOf<String>("") }
@@ -171,8 +170,8 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
                 onDismiss = {showRecognizedTextDialog = false; recognizedText = ""},
                 onConfirm = {
                     viewModel.sendMessage(recognizedText, type = MessageType.TEXT, targetLanguage = "it", timestamp = System.currentTimeMillis())
-                    showRecognizedTextDialog = false;
-                    recognizedText = "";
+                    showRecognizedTextDialog = false
+                    recognizedText = ""
                     navController.navigate("screen2")
                 },
                 showDialog = showRecognizedTextDialog,
@@ -216,7 +215,7 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
                     modifier = Modifier.offset(x = -90.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.PlayArrow,
+                        painter = painterResource(R.drawable.baseline_camera_alt_24),
                         contentDescription = "Open Camera",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -230,7 +229,7 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
                     modifier = Modifier.offset(x = 90.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Menu,
+                        painter = painterResource(R.drawable.baseline_collections_24),
                         contentDescription = "Open Gallery",
                         tint = MaterialTheme.colorScheme.primary
                     )                }

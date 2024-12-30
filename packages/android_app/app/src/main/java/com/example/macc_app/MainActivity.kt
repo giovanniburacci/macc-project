@@ -7,10 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -79,7 +76,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                 modifier = Modifier.size(56.dp).offset(x = (-90).dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.PlayArrow,
+                    painter = painterResource(R.drawable.baseline_add_a_photo_24),
                     contentDescription = "Open Camera",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -95,7 +92,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                 modifier = Modifier.size(56.dp).offset(x = 0.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.MailOutline,
+                    painter = painterResource(R.drawable.baseline_chat_24),
                     contentDescription = "Open Chat",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -109,7 +106,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                 modifier = Modifier.size(56.dp).offset(x = 90.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.AccountBox,
+                    painter = painterResource(R.drawable.baseline_groups_24),
                     contentDescription = "View History",
                     tint = MaterialTheme.colorScheme.primary
                 )
