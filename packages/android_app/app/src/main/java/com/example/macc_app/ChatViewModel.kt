@@ -124,6 +124,8 @@ class ChatViewModel : ViewModel() {
 
     private suspend fun recognizeSpeech(): String = withContext(Dispatchers.Main) {
         suspendCancellableCoroutine { continuation ->
+            var isContinuationResumed = false // Flag to ensure single resumption
+
             val listener = object : RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {
                     Log.d("SpeechRecognition", "Ready for speech")
@@ -142,14 +144,24 @@ class ChatViewModel : ViewModel() {
                 }
 
                 override fun onError(error: Int) {
-                    Log.e("SpeechRecognition", "Error occurred: $error")
-                    continuation.resumeWithException(RuntimeException("Speech recognition error: $error"))
+                    if (!isContinuationResumed) {
+                        isContinuationResumed = true
+                        Log.e("SpeechRecognition", "Error occurred: $error")
+                        continuation.resumeWithException(RuntimeException("Speech recognition error: $error"))
+                    } else {
+                        Log.w("SpeechRecognition", "onError called after continuation already resumed.")
+                    }
                 }
 
                 override fun onResults(results: Bundle?) {
-                    val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                    val text = matches?.joinToString(separator = " ") ?: ""
-                    continuation.resume(text)
+                    if (!isContinuationResumed) {
+                        isContinuationResumed = true
+                        val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        val text = matches?.joinToString(separator = " ") ?: ""
+                        continuation.resume(text)
+                    } else {
+                        Log.w("SpeechRecognition", "onResults called after continuation already resumed.")
+                    }
                 }
 
                 override fun onPartialResults(partialResults: Bundle?) {}
