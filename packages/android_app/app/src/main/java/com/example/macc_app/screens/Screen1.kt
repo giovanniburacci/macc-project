@@ -208,7 +208,7 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
             )
 
             Box(
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom=12.dp),
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom=24.dp),
                 contentAlignment = Alignment.BottomCenter // Align buttons at the bottom center,
             ) {
 

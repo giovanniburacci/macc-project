@@ -48,17 +48,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppContent(navController: NavHostController, model: ChatViewModel) {
-    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant)) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant)) {
         // Top Section: Dynamic Screens
         Box(
             modifier = Modifier
-                .weight(1f) // This section takes the remaining vertical space
                 .fillMaxWidth()
         ) {
             NavHost(
                 navController = navController,
                 startDestination = "screen1",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize().padding(bottom = 64.dp)
             ) {
                 composable("screen1") { Screen1(model, navController) }
                 composable("screen2") { Screen2(model) }
@@ -68,9 +67,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
 
         // Floating Buttons for each screen
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Transparent),
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom=12.dp),
             contentAlignment = Alignment.Center
         ) {
             FloatingActionButton(
