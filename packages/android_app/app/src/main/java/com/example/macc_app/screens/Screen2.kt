@@ -59,7 +59,6 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-
     val showConfirmationPopup = viewModel.showConfirmationPopup
     val lastMessage = viewModel.lastMessage
 
@@ -144,9 +143,9 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
                         type = MessageType.TEXT,
                         targetLanguage = "it",
                         timestamp = System.currentTimeMillis()
-                    );
-                    showConfirmationPopup.value = false;
-                    lastMessage.value = null;
+                    )
+                    showConfirmationPopup.value = false
+                    lastMessage.value = null
 
                 },
                 showDialog = showConfirmationPopup.value,
@@ -183,7 +182,9 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
                                 onLongPress = { selectedText ->
                                     showPopup = true
                                     chatBubbleText = selectedText
-                                }
+                                },
+                                showExplanation,
+                                showConfirmationPopup.value
                             )
                             if (isTranslation) {
                                 ChatBubble(
@@ -193,7 +194,9 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
                                     onLongPress = { selectedText ->
                                         showPopup = true
                                         chatBubbleText = selectedText
-                                    }
+                                    },
+                                    showExplanation,
+                                    showConfirmationPopup.value
                                 )
                             }
                         }
@@ -242,7 +245,9 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
+                        .padding(8.dp),
+                    showExplanation,
+                    showConfirmationPopup.value
                 )
             }
         }
@@ -250,8 +255,9 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
 }
 
 @Composable
-fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boolean, onLongPress: (String) -> Unit) {
-    val bubbleColor = if (translation) Color(0xFFD1E8E2) else Color(0xFFACE0F9)
+fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boolean, onLongPress: (String) -> Unit, showExplanation: Boolean, showConfirmationPopup: Boolean) {
+    var bubbleColor = if (translation) Color(0xFFD1E8E2) else Color(0xFFACE0F9)
+    bubbleColor = if(!showExplanation && !showConfirmationPopup) bubbleColor else bubbleColor.copy(alpha = 0.6f)
     val cornerRadius = RoundedCornerShape(12.dp)
 
     Box(
@@ -282,7 +288,9 @@ fun MessageInput(
     onTextSend: (String, Long) -> Unit,
     onSpeechStart: () -> Unit,
     onSpeechStop: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showExplanation: Boolean,
+    showConfirmationPopup: Boolean
 ) {
     var text by remember { mutableStateOf(TextFieldValue("")) }
     var isRecording by remember { mutableStateOf(false) }
@@ -297,8 +305,9 @@ fun MessageInput(
             onValueChange = { text = it },
             modifier = Modifier
                 .weight(1f)
-                .background(Color.White, RoundedCornerShape(12.dp))
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .background(if(!showExplanation && !showConfirmationPopup) Color.White else Color.White.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            enabled = (!showExplanation && !showConfirmationPopup)
         )
 
         Spacer(modifier = Modifier.width(8.dp))
@@ -310,7 +319,10 @@ fun MessageInput(
                     text = TextFieldValue("") // Clear input field
                 }
             },
-            modifier = Modifier.align(Alignment.CenterVertically)
+            modifier = Modifier
+                .align(Alignment.CenterVertically)
+                .alpha(if(showExplanation || showConfirmationPopup) 0.6f else 1.0f),
+            enabled = (!showExplanation && !showConfirmationPopup)
         ) {
             Text("Send")
         }
@@ -330,9 +342,13 @@ fun MessageInput(
                 .align(Alignment.CenterVertically)
                 .background(if (isRecording) Color.Red else Color.Gray, CircleShape)
                 .padding(12.dp)
+                .alpha(if(showExplanation || showConfirmationPopup) 0.6f else 1.0f),
+            enabled = (!showExplanation && !showConfirmationPopup)
         ) {
             Text(if (isRecording) "Stop" else "Talk")
         }
+
+        if(showConfirmationPopup) { isRecording = false }
     }
 }
 
@@ -351,7 +367,7 @@ fun ExplanationBox(
 
     // Use LaunchedEffect to control the visibility
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(200)
+        delay(200)
         isVisible = true
         isLoading = false
     }
