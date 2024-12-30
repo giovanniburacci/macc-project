@@ -1,4 +1,4 @@
-package com.example.macc_app.composables
+package com.example.macc_app.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize

@@ -6,11 +6,7 @@ import android.Manifest
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,17 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import com.example.macc_app.R
 import com.example.macc_app.SensorView
 import kotlinx.coroutines.launch
-import androidx.compose.material3.Switch
 import androidx.compose.ui.draw.alpha
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.CircularProgressIndicator
+import com.example.macc_app.components.ChatBubble
+import com.example.macc_app.components.ExplanationBox
+import com.example.macc_app.components.MessageInput
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -253,221 +245,3 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
         }
     }
 }
-
-@Composable
-fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boolean, onLongPress: (String) -> Unit, showExplanation: Boolean, showConfirmationPopup: Boolean) {
-    var bubbleColor = if (translation) Color(0xFFD1E8E2) else Color(0xFFACE0F9)
-    bubbleColor = if(!showExplanation && !showConfirmationPopup) bubbleColor else bubbleColor.copy(alpha = 0.6f)
-    val cornerRadius = RoundedCornerShape(12.dp)
-
-    Box(
-        modifier = modifier
-            .padding(vertical = 4.dp)
-            .background(bubbleColor, cornerRadius)
-            .padding(12.dp)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = {
-                        onLongPress(if(!translation) message.originalContent else message.translatedContent.value) // Trigger the lambda when long-pressed
-                    }
-                )
-            }
-    ) {
-        if(!translation) {
-            Text(text = message.originalContent, fontSize = 16.sp)
-        }
-        else {
-            Text(text = message.translatedContent.value, fontSize = 16.sp)
-        }
-
-    }
-}
-
-@Composable
-fun MessageInput(
-    onTextSend: (String, Long) -> Unit,
-    onSpeechStart: () -> Unit,
-    onSpeechStop: () -> Unit,
-    modifier: Modifier = Modifier,
-    showExplanation: Boolean,
-    showConfirmationPopup: Boolean
-) {
-    var text by remember { mutableStateOf(TextFieldValue("")) }
-    var isRecording by remember { mutableStateOf(false) }
-
-    Row(
-        modifier = modifier
-            .padding(8.dp)
-            .height(56.dp)
-    ) {
-        BasicTextField(
-            value = text,
-            onValueChange = { text = it },
-            modifier = Modifier
-                .weight(1f)
-                .background(if(!showExplanation && !showConfirmationPopup) Color.White else Color.White.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            enabled = (!showExplanation && !showConfirmationPopup)
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Button(
-            onClick = {
-                if (text.text.isNotBlank()) {
-                    onTextSend(text.text, System.currentTimeMillis())
-                    text = TextFieldValue("") // Clear input field
-                }
-            },
-            modifier = Modifier
-                .align(Alignment.CenterVertically)
-                .alpha(if(showExplanation || showConfirmationPopup) 0.6f else 1.0f),
-            enabled = (!showExplanation && !showConfirmationPopup)
-        ) {
-            Text("Send")
-        }
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Button(
-            onClick = {
-                if (!isRecording) {
-                    onSpeechStart()
-                } else {
-                    onSpeechStop()
-                }
-                isRecording = !isRecording
-            },
-            modifier = Modifier
-                .align(Alignment.CenterVertically)
-                .background(if (isRecording) Color.Red else Color.Gray, CircleShape)
-                .padding(12.dp)
-                .alpha(if(showExplanation || showConfirmationPopup) 0.6f else 1.0f),
-            enabled = (!showExplanation && !showConfirmationPopup)
-        ) {
-            Text(if (isRecording) "Stop" else "Talk")
-        }
-
-        if(showConfirmationPopup) { isRecording = false }
-    }
-}
-
-@Composable
-fun ExplanationBox(
-    onDismiss: () -> Unit,
-    pitchEnabled: Boolean,
-    onPitchToggle: (Boolean) -> Unit,
-    rollEnabled: Boolean,
-    onRollToggle: (Boolean) -> Unit,
-    yawEnabled: Boolean,
-    onYawToggle: (Boolean) -> Unit
-) {
-    var isVisible by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(true) }
-
-    // Use LaunchedEffect to control the visibility
-    LaunchedEffect(Unit) {
-        delay(200)
-        isVisible = true
-        isLoading = false
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.Black.copy(alpha = 0.6f)) // Dim background
-            .clickable { onDismiss() } // Dismiss when clicking outside the box
-            .animateContentSize()
-    ) {
-        if (isLoading) {
-            // Show loader while content is loading
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .wrapContentSize(Alignment.Center)
-            ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
-            }
-        }
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(tween(durationMillis = 500)), // Fade-in animation
-            exit = fadeOut(tween(durationMillis = 500))  // Fade-out if dismissed
-        ) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(16.dp)
-                    .background(color = Color.White, shape = RoundedCornerShape(8.dp))
-                    .padding(16.dp) // Padding inside the box
-                    .alpha(
-                        animateFloatAsState(
-                            if (isVisible) 1f else 0f, animationSpec = tween(durationMillis = 2000),
-                            label = ""
-                        ).value
-                    ) // Smooth fade-in effect
-            ) {
-                AlertDialog(
-                    onDismissRequest = { onDismiss() },
-                    title = { Text("How to use 2D") },
-                    icon = {
-                        AsyncImage(
-                            model = R.drawable.rotate_mobile,
-                            contentDescription = "Rotation Movement",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(80.dp)
-                        )
-                    },
-                    text = {
-                        Column {
-                            Text(
-                                text = "Long press on a message to explore it in 2D space. Tilt or rotate your device to move the message, following your hand's movements.",
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                            // Toggle for Pitch
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Enable Pitch", modifier = Modifier.weight(1f))
-                                Switch(
-                                    checked = pitchEnabled,
-                                    onCheckedChange = onPitchToggle
-                                )
-                            }
-                            // Toggle for Roll
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Enable Roll", modifier = Modifier.weight(1f))
-                                Switch(
-                                    checked = rollEnabled,
-                                    onCheckedChange = onRollToggle
-                                )
-                            }
-                            // Toggle for Yaw
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Enable Yaw", modifier = Modifier.weight(1f))
-                                Switch(
-                                    checked = yawEnabled,
-                                    onCheckedChange = onYawToggle
-                                )
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        Button(onClick = { onDismiss() }) {
-                            Text("Got it")
-                        }
-                    },
-                )
-            }
-        }
-    }
-}
-
