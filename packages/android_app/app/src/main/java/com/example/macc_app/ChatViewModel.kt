@@ -1,5 +1,6 @@
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -8,6 +9,7 @@ import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.nl.languageid.LanguageIdentification
@@ -22,6 +24,12 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import android.Manifest
+import android.app.Activity
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.FusedLocationProviderClient
 
 class ChatViewModel : ViewModel() {
 
@@ -43,7 +51,7 @@ class ChatViewModel : ViewModel() {
         recognizer = SpeechRecognizer.createSpeechRecognizer(context)
     }
 
-    fun sendMessage(content: String, type: MessageType, targetLanguage: String, timestamp: Long) {
+    fun sendMessage(content: String, type: MessageType, targetLanguage: String, timestamp: Long, context: Context) {
         val message = Message(isSender = true, originalContent = content, timestamp = timestamp)
         _messages.add(message)
 
@@ -54,6 +62,8 @@ class ChatViewModel : ViewModel() {
                 transcribeAudio(message, targetLanguage)
             }
         }
+
+        obtainPosition(context)
     }
 
     private fun processTextMessage(message: Message, targetLanguage: String) {
@@ -205,5 +215,45 @@ class ChatViewModel : ViewModel() {
         super.onCleared()
         textToSpeech?.shutdown()
         recognizer?.destroy()
+    }
+}
+
+fun obtainPosition(context: Context) {
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+    if (ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+        ActivityCompat.requestPermissions(
+            context as Activity, // Replace `this` with your Activity reference
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            1001
+        )
+    } else {
+        // Permission already granted, fetch location
+        fetchLocation(context, fusedLocationClient)
+    }
+}
+
+private fun fetchLocation(context: Context, fusedLocationClient: FusedLocationProviderClient) {
+    try {
+        fusedLocationClient.lastLocation.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val location = task.result
+                if (location != null) {
+                    Log.d("ChatViewModel", "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
+                    Toast.makeText(context, "Lat: ${location.latitude}, Lng: ${location.longitude}", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(context, "Location is null. Try again later.", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                Log.d("Screen2", "No Location")
+                Toast.makeText(context, "Unable to fetch location", Toast.LENGTH_LONG).show()
+            }
+        }
+    } catch (e: SecurityException) {
+        Toast.makeText(context, "Permission error: ${e.message}", Toast.LENGTH_LONG).show()
     }
 }

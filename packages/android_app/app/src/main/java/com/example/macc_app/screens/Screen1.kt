@@ -169,7 +169,7 @@ fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController
             RecognizedTextDialog(
                 onDismiss = {showRecognizedTextDialog = false; recognizedText = ""},
                 onConfirm = {
-                    viewModel.sendMessage(recognizedText, type = MessageType.TEXT, targetLanguage = "it", timestamp = System.currentTimeMillis())
+                    viewModel.sendMessage(recognizedText, type = MessageType.TEXT, targetLanguage = "it", timestamp = System.currentTimeMillis(), context = context)
                     showRecognizedTextDialog = false
                     recognizedText = ""
                     navController.navigate("screen2")

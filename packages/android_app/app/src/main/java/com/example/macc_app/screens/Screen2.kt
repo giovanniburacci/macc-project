@@ -124,7 +124,8 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
                         lastMessage.value!!.originalContent,
                         type = MessageType.TEXT,
                         targetLanguage = "it",
-                        timestamp = System.currentTimeMillis()
+                        timestamp = System.currentTimeMillis(),
+                        context = context
                     )
                     showConfirmationPopup.value = false
                     lastMessage.value = null
@@ -212,7 +213,8 @@ fun Screen2(viewModel: ChatViewModel = viewModel()) {
                             text,
                             type = MessageType.TEXT,
                             targetLanguage = "it",
-                            timestamp = timestamp
+                            timestamp = timestamp,
+                            context = context
                         )
                     },
                     onSpeechStart = {
