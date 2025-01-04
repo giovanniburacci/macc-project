@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import com.example.macc_app.components.ChatBubble
 import com.example.macc_app.components.ExplanationBox
 import com.example.macc_app.components.MessageInput
+import com.example.macc_app.components.MessagesList
 import com.example.macc_app.components.RecognizedTextDialog
 import kotlinx.coroutines.delay
 
@@ -141,52 +142,19 @@ fun LatestChat(viewModel: ChatViewModel = viewModel()) {
             .padding(paddingValues) // Apply padding from Scaffold
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Messages List
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    userScrollEnabled = true,
-                    state = listState
-                ) {
-                    coroutineScope.launch {
-                        delay(250)
-                        // Animate scroll to the 10th item
-                        listState.animateScrollToItem(messages.size*2)
-                    }
-                    itemsIndexed(messages) { index, message ->
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            val isTranslation = message.translatedContent.value != "..."
-                            ChatBubble(
-                                message,
-                                Modifier.align(Alignment.Start),
-                                translation = false,
-                                onLongPress = { selectedText ->
-                                    showPopup = true
-                                    chatBubbleText = selectedText
-                                },
-                                showExplanation,
-                                showConfirmationPopup.value
-                            )
-                            if (isTranslation) {
-                                ChatBubble(
-                                    message,
-                                    Modifier.align(Alignment.End),
-                                    translation = true,
-                                    onLongPress = { selectedText ->
-                                        showPopup = true
-                                        chatBubbleText = selectedText
-                                    },
-                                    showExplanation,
-                                    showConfirmationPopup.value
-                                )
-                            }
-                        }
+                MessagesList(modifier = Modifier.
+                weight(1f)
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                    messages,
+                    onLongPressChatBubble = {
+                            selectedText ->
+                        showPopup = true
+                        chatBubbleText = selectedText
 
-                    }
-                }
-
+                    },
+                    showExplanation,
+                    showConfirmationPopup.value)
                 if (showPopup) {
                     AlertDialog(
                         onDismissRequest = { showPopup = false },

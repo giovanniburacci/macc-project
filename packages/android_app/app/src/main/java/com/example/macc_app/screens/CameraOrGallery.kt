@@ -172,7 +172,7 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
                     viewModel.sendMessage(recognizedText, type = MessageType.TEXT, targetLanguage = "it", timestamp = System.currentTimeMillis(), context = context)
                     showRecognizedTextDialog = false
                     recognizedText = ""
-                    navController.navigate("screen2")
+                    navController.navigate("latestChat")
                 },
                 showDialog = showRecognizedTextDialog,
                 text = recognizedText

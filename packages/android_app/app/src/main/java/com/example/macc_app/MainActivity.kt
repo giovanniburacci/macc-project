@@ -18,12 +18,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.compose.AppTheme
 import com.example.macc_app.screens.CameraOrGallery
-import com.example.macc_app.screens.ChatHistory
+import com.example.macc_app.screens.ChatHistory.ChatHistory
+import com.example.macc_app.screens.ChatHistory.OldViewOnlyChat
 import com.example.macc_app.screens.LatestChat
 
 class MainActivity : ComponentActivity() {
@@ -57,7 +60,14 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
             ) {
                 composable("cameraOrGallery") { CameraOrGallery(model, navController) }
                 composable("latestChat") { LatestChat(model) }
-                composable("chatHistory") { ChatHistory() }
+                composable("chatHistory") { ChatHistory(navController) }
+                composable(
+                    "screenY/{cardId}", // Define the route with a parameter placeholder
+                    arguments = listOf(navArgument("cardId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val cardId = backStackEntry.arguments?.getString("cardId") ?: ""
+                    OldViewOnlyChat(cardId) // Pass the parameter to ScreenY
+                }
             }
         }
 
