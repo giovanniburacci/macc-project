@@ -27,7 +27,7 @@ import com.example.macc_app.components.MessagesList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OldViewOnlyChat(id: String, viewModel: ChatViewModel) {
+fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
 
     var showExplanation by remember { mutableStateOf(false) }
 

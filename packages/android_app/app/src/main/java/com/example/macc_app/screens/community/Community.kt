@@ -1,4 +1,4 @@
-package com.example.macc_app.screens.history
+package com.example.macc_app.screens.community
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,10 +17,10 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatHistory(navController: NavController) {
+fun Community(navController: NavController) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Your History") })
+            TopAppBar(title = { Text("Community") })
         }
     ) { padding ->
         LazyColumn(
@@ -28,7 +28,7 @@ fun ChatHistory(navController: NavController) {
             modifier = Modifier.fillMaxSize()
         ) {
             items(20) { index -> // Replace 20 with your data list size
-                val chatId = "Card$index"
+                val chatId = "Chat$index"
                 Card(
                     modifier = Modifier
                         .padding(8.dp)

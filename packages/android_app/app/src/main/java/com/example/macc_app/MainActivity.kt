@@ -26,8 +26,10 @@ import androidx.navigation.navArgument
 import com.example.compose.AppTheme
 import com.example.macc_app.screens.CameraOrGallery
 import com.example.macc_app.screens.history.ChatHistory
-import com.example.macc_app.screens.history.OldViewOnlyChat
+import com.example.macc_app.screens.history.HistoryViewOnlyChat
 import com.example.macc_app.screens.LatestChat
+import com.example.macc_app.screens.community.Community
+import com.example.macc_app.screens.community.ViewOnlyChatWithComments
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,12 +63,20 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                 composable("cameraOrGallery") { CameraOrGallery(model, navController) }
                 composable("latestChat") { LatestChat(model) }
                 composable("chatHistory") { ChatHistory(navController) }
+                composable("community") { Community(navController) }
                 composable(
-                    "screenY/{cardId}", // Define the route with a parameter placeholder
-                    arguments = listOf(navArgument("cardId") { type = NavType.StringType })
+                    "chatHistory/{chatId}", // Define the route with a parameter placeholder
+                    arguments = listOf(navArgument("chatId") { type = NavType.StringType })
                 ) { backStackEntry ->
-                    val cardId = backStackEntry.arguments?.getString("cardId") ?: ""
-                    OldViewOnlyChat(cardId, model) // Pass the parameter to ScreenY
+                    val chatId = backStackEntry.arguments?.getString("chatId") ?: ""
+                    HistoryViewOnlyChat(chatId, model) // Pass the parameter to chatHistory
+                }
+                composable(
+                    "community/{chatId}", // Define the route with a parameter placeholder
+                    arguments = listOf(navArgument("chatId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val chatId = backStackEntry.arguments?.getString("chatId") ?: ""
+                    ViewOnlyChatWithComments(chatId, model) // Pass the parameter to chatHistory
                 }
             }
         }
@@ -83,7 +93,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                     }
                 },
                 shape = CircleShape,
-                modifier = Modifier.size(56.dp).offset(x = (-90).dp)
+                modifier = Modifier.size(56.dp).offset(x = (-75).dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_add_a_photo_24),
@@ -99,7 +109,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                     }
                 },
                 shape = CircleShape,
-                modifier = Modifier.size(56.dp).offset(x = 0.dp)
+                modifier = Modifier.size(56.dp).offset(x = (-25).dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_chat_24),
@@ -113,11 +123,25 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                     navController.navigate("chatHistory")
                 } },
                 shape = CircleShape,
-                modifier = Modifier.size(56.dp).offset(x = 90.dp)
+                modifier = Modifier.size(56.dp).offset(x = 25.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_history_24),
+                    contentDescription = "View History",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            FloatingActionButton(
+                onClick = { if (navController.currentBackStackEntry?.destination?.route !== "community") {
+                    navController.navigate("community")
+                } },
+                shape = CircleShape,
+                modifier = Modifier.size(56.dp).offset(x = 75.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_groups_24),
-                    contentDescription = "View History",
+                    contentDescription = "View community",
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
