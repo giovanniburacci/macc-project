@@ -1,4 +1,4 @@
-package com.example.macc_app.screens.ChatHistory
+package com.example.macc_app.screens.history
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

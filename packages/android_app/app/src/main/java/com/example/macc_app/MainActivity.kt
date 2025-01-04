@@ -25,8 +25,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.compose.AppTheme
 import com.example.macc_app.screens.CameraOrGallery
-import com.example.macc_app.screens.ChatHistory.ChatHistory
-import com.example.macc_app.screens.ChatHistory.OldViewOnlyChat
+import com.example.macc_app.screens.history.ChatHistory
+import com.example.macc_app.screens.history.OldViewOnlyChat
 import com.example.macc_app.screens.LatestChat
 
 class MainActivity : ComponentActivity() {
@@ -66,7 +66,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                     arguments = listOf(navArgument("cardId") { type = NavType.StringType })
                 ) { backStackEntry ->
                     val cardId = backStackEntry.arguments?.getString("cardId") ?: ""
-                    OldViewOnlyChat(cardId) // Pass the parameter to ScreenY
+                    OldViewOnlyChat(cardId, model) // Pass the parameter to ScreenY
                 }
             }
         }

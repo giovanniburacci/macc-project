@@ -38,10 +38,6 @@ fun LatestChat(viewModel: ChatViewModel = viewModel()) {
     val context = LocalContext.current
     val messages = viewModel.messages
 
-    // For auto-scroll
-    val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-
     val showConfirmationPopup = viewModel.showConfirmationPopup
     val lastMessage = viewModel.lastMessage
 
