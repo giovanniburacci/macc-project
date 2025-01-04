@@ -69,6 +69,8 @@ dependencies {
     implementation(libs.androidx.animation)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.play.services.location)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
