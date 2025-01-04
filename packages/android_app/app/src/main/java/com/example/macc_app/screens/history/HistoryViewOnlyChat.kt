@@ -57,7 +57,7 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Current chat") }, // Set the title
+                title = { Text("Your chat") }, // Set the title
                 actions = { Button(onClick = { showExplanation = true }) { Text("How to use 2D", fontWeight = MaterialTheme.typography.titleMedium.fontWeight) } }
             )
         }
@@ -90,7 +90,8 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
 
                     },
                     showExplanation,
-                    showConfirmationPopup.value
+                    showConfirmationPopup.value,
+                    comments = null
                 )
                 if (showPopup) {
                     AlertDialog(

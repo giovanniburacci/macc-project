@@ -150,7 +150,9 @@ fun LatestChat(viewModel: ChatViewModel = viewModel()) {
 
                     },
                     showExplanation,
-                    showConfirmationPopup.value)
+                    showConfirmationPopup.value,
+                    comments = null
+                )
                 if (showPopup) {
                     AlertDialog(
                         onDismissRequest = { showPopup = false },

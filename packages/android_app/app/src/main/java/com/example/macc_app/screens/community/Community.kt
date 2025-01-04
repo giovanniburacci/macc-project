@@ -34,7 +34,7 @@ fun Community(navController: NavController) {
                         .padding(8.dp)
                         .fillMaxWidth()
                         .clickable {
-                            navController.navigate("chatHistory/$chatId") // Pass the cardId
+                            navController.navigate("community/$chatId") // Pass the cardId
                         },
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
