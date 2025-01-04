@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Screen3() {
+fun ChatHistory() {
     Column(
         modifier = Modifier
             .fillMaxSize()

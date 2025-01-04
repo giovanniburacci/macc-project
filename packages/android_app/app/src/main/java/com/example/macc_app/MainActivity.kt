@@ -22,9 +22,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.compose.AppTheme
-import com.example.macc_app.screens.Screen1
-import com.example.macc_app.screens.Screen2
-import com.example.macc_app.screens.Screen3
+import com.example.macc_app.screens.CameraOrGallery
+import com.example.macc_app.screens.ChatHistory
+import com.example.macc_app.screens.LatestChat
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,12 +52,12 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
         ) {
             NavHost(
                 navController = navController,
-                startDestination = "screen1",
+                startDestination = "cameraOrGallery",
                 modifier = Modifier.fillMaxSize().padding(bottom = 64.dp)
             ) {
-                composable("screen1") { Screen1(model, navController) }
-                composable("screen2") { Screen2(model) }
-                composable("screen3") { Screen3() }
+                composable("cameraOrGallery") { CameraOrGallery(model, navController) }
+                composable("latestChat") { LatestChat(model) }
+                composable("chatHistory") { ChatHistory() }
             }
         }
 
@@ -68,8 +68,8 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
         ) {
             FloatingActionButton(
                 onClick = {
-                    if (navController.currentBackStackEntry?.destination?.route !== "screen1") {
-                        navController.navigate("screen1")
+                    if (navController.currentBackStackEntry?.destination?.route !== "cameraOrGallery") {
+                        navController.navigate("cameraOrGallery")
                     }
                 },
                 shape = CircleShape,
@@ -84,8 +84,8 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
 
             FloatingActionButton(
                 onClick = {
-                    if (navController.currentBackStackEntry?.destination?.route !== "screen2") {
-                        navController.navigate("screen2")
+                    if (navController.currentBackStackEntry?.destination?.route !== "latestChat") {
+                        navController.navigate("latestChat")
                     }
                 },
                 shape = CircleShape,
@@ -99,8 +99,8 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
             }
 
             FloatingActionButton(
-                onClick = { if (navController.currentBackStackEntry?.destination?.route !== "screen3") {
-                    navController.navigate("screen3")
+                onClick = { if (navController.currentBackStackEntry?.destination?.route !== "chatHistory") {
+                    navController.navigate("chatHistory")
                 } },
                 shape = CircleShape,
                 modifier = Modifier.size(56.dp).offset(x = 90.dp)

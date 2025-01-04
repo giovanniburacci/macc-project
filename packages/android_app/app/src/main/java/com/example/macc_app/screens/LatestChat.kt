@@ -33,7 +33,7 @@ import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Screen2(viewModel: ChatViewModel = viewModel()) {
+fun LatestChat(viewModel: ChatViewModel = viewModel()) {
     val context = LocalContext.current
     val messages = viewModel.messages
 

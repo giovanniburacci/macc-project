@@ -48,7 +48,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 @Composable
-fun Screen1(viewModel: ChatViewModel = viewModel(), navController: NavController) {
+fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavController) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
