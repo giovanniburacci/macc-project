@@ -162,7 +162,6 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
     ) {
 
         if(showRecognizedTextDialog) {
@@ -193,7 +192,7 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
             )
 
             Box(
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom=24.dp),
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom=104.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
 
@@ -232,7 +231,8 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
                         painter = painterResource(R.drawable.baseline_collections_24),
                         contentDescription = "Open Gallery",
                         tint = MaterialTheme.colorScheme.primary
-                    )                }
+                    )
+                }
             }
 
         }

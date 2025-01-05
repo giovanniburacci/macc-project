@@ -25,7 +25,7 @@ fun ChatHistory(navController: NavController) {
     ) { padding ->
         LazyColumn(
             contentPadding = padding,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
         ) {
             items(20) { index -> // Replace 20 with your data list size
                 val chatId = "Card$index"

@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
             NavHost(
                 navController = navController,
                 startDestination = "cameraOrGallery",
-                modifier = Modifier.fillMaxSize().padding(bottom = 64.dp)
+                modifier = Modifier.fillMaxSize()
             ) {
                 composable("cameraOrGallery") { CameraOrGallery(model, navController) }
                 composable("latestChat") { LatestChat(model) }
@@ -83,7 +84,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
 
         // Floating Buttons for each screen
         Box(
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom=12.dp),
+            modifier = Modifier.align(Alignment.BottomCenter).background(Color.Transparent).padding(bottom = 12.dp),
             contentAlignment = Alignment.Center
         ) {
             FloatingActionButton(

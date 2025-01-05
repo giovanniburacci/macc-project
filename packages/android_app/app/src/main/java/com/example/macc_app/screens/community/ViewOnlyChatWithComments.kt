@@ -78,7 +78,7 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
             .fillMaxSize()
             .padding(paddingValues) // Apply padding from Scaffold
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)) {
                 MessagesList(
                     modifier = Modifier.weight(1f)
                         .padding(16.dp)
