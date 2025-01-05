@@ -26,6 +26,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import android.Manifest
 import android.app.Activity
+import android.location.Geocoder
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.LocationServices
@@ -243,8 +244,12 @@ private fun fetchLocation(context: Context, fusedLocationClient: FusedLocationPr
             if (task.isSuccessful) {
                 val location = task.result
                 if (location != null) {
+
                     Log.d("ChatViewModel", "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
                     Toast.makeText(context, "Lat: ${location.latitude}, Lng: ${location.longitude}", Toast.LENGTH_LONG).show()
+                    val cityName = getCityName(location.latitude, location.longitude, context)
+                    Log.d("ChatViewModel", "City: $cityName")
+                    Toast.makeText(context, "City: $cityName", Toast.LENGTH_LONG).show()
                 } else {
                     Toast.makeText(context, "Location is null. Try again later.", Toast.LENGTH_LONG).show()
                 }
@@ -256,4 +261,18 @@ private fun fetchLocation(context: Context, fusedLocationClient: FusedLocationPr
     } catch (e: SecurityException) {
         Toast.makeText(context, "Permission error: ${e.message}", Toast.LENGTH_LONG).show()
     }
+}
+
+private fun getCityName(lat: Double,long: Double, context: Context): String?{
+    var cityName: String?
+    val geoCoder = Geocoder(context, Locale.getDefault())
+    val address = geoCoder.getFromLocation(lat,long,1)
+    cityName = address?.get(0)?.adminArea
+    if (cityName == null){
+        cityName = address?.get(0)?.locality
+        if (cityName == null){
+            cityName = address?.get(0)?.subAdminArea
+        }
+    }
+    return cityName
 }
