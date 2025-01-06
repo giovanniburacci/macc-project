@@ -5,6 +5,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface PythonAnywhereFactorAPI {
@@ -31,6 +32,9 @@ interface PythonAnywhereFactorAPI {
 
     @GET("/chat/from-user/{uid}")
     suspend fun fetchHistory(@Path("uid") uid: String): List<ChatResponse>
+
+    @PUT("/chat/{chatId}")
+    suspend fun updateIsChatPublic(@Path("chatId") chatId: Long): ChatResponse
 
 }
 

@@ -119,6 +119,23 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         }
     }
 
+    fun setChat(chat: ChatResponse) {
+        lastChat.value = chat
+    }
+
+    fun updateIsChatPublic(chatId: Long) {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "chatId: $chatId")
+                val response = myApiService.updateIsChatPublic(chatId)
+                lastChat.value = response
+                Log.d("ChatViewModel", "Response from API updateIsChatPublic: $response")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error updateIsChatPublic", e)
+            }
+        }
+    }
+
     fun fetchLastChat(uid: String) {
         viewModelScope.launch {
             try {

@@ -2,7 +2,9 @@ package com.example.macc_app.screens
 
 import ChatViewModel
 import android.Manifest
+import android.graphics.Paint.Align
 import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -25,6 +27,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.macc_app.SensorView
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.ui.res.painterResource
+import com.example.macc_app.R
 import com.example.macc_app.components.ChatBubble
 import com.example.macc_app.components.ExplanationBox
 import com.example.macc_app.components.MessageInput
@@ -40,6 +49,7 @@ fun LatestChat(viewModel: ChatViewModel) {
 
     val showConfirmationPopup = viewModel.showConfirmationPopup
     val lastMessage = viewModel.lastMessage
+    val isPublic = viewModel.lastChat.value!!.is_public
 
     var showPopup by remember { mutableStateOf(false) }
     var chatBubbleText by remember { mutableStateOf("") }
@@ -96,7 +106,30 @@ fun LatestChat(viewModel: ChatViewModel) {
         topBar = {
             TopAppBar(
                 title = { Text("Current chat") }, // Set the title
-                actions = { Button(onClick = { showExplanation = true }) { Text("How to use 2D", fontWeight = MaterialTheme.typography.titleMedium.fontWeight) }}
+                actions = {
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Switch(
+                            thumbContent = {
+                                Icon(
+                                    painter = painterResource(if(!isPublic) R.drawable.outline_lock_24 else R.drawable.baseline_lock_open_24),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                                )},
+                            checked = isPublic,
+                            onCheckedChange = {
+                                viewModel.updateIsChatPublic(viewModel.lastChat.value!!.id)
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Button(onClick = { showExplanation = true }) {
+                            Text("How to use 2D", fontWeight = MaterialTheme.typography.titleMedium.fontWeight)
+                        }
+                    }
+
+                }
             )
         }
     ) { paddingValues ->

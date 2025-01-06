@@ -3,14 +3,21 @@ package com.example.macc_app.screens.history
 import ChatViewModel
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -18,9 +25,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.macc_app.R
 import com.example.macc_app.SensorView
 import com.example.macc_app.components.ExplanationBox
 import com.example.macc_app.components.MessagesList
@@ -51,15 +61,39 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
     }
 
     val showConfirmationPopup = viewModel.showConfirmationPopup
-    // TBD these messages should be replaced
+
     val messages = viewModel.messages
+    val isPublic = viewModel.lastChat.value!!.is_public
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Your chat") }, // Set the title
-                actions = { Button(onClick = { showExplanation = true }) { Text("How to use 2D", fontWeight = MaterialTheme.typography.titleMedium.fontWeight) } }
-            )
+                actions = {
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Switch(
+                            thumbContent = {
+                                Icon(
+                                    painter = painterResource(if(!isPublic) R.drawable.outline_lock_24 else R.drawable.baseline_lock_open_24),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                                )
+                            },
+                            checked = isPublic,
+                            onCheckedChange = {
+                                viewModel.updateIsChatPublic(viewModel.lastChat.value!!.id)
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Button(onClick = { showExplanation = true }) {
+                            Text("How to use 2D", fontWeight = MaterialTheme.typography.titleMedium.fontWeight)
+                        }
+                    }
+
+                }            )
         }
     ) { paddingValues ->
 
