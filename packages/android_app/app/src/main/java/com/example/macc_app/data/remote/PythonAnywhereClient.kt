@@ -5,7 +5,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object PythonAnywhereClient {
-    private const val BASE_URL = ""
+    private const val BASE_URL = "https://ghinoads.pythonanywhere.com"
 
     init {
         Log.d("PythonAnywhereClient", "PythonAnywhereClient initialized")
@@ -18,7 +18,7 @@ object PythonAnywhereClient {
             .build()
         }
 
-    val api: PythonAnywhereAPI by lazy {
-        retrofit.create(PythonAnywhereAPI::class.java)
+    val api: PythonAnywhereFactorAPI by lazy {
+        retrofit.create(PythonAnywhereFactorAPI::class.java)
        }
 }

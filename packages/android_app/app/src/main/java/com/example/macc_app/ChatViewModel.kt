@@ -29,16 +29,39 @@ import android.app.Activity
 import android.location.Geocoder
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.MutableLiveData
+import com.example.macc_app.data.remote.PythonAnywhereFactorAPI
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.FusedLocationProviderClient
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.macc_app.data.remote.AddChatBody
+import com.example.macc_app.data.remote.AddChatMessage
+import com.example.macc_app.data.remote.AddUserBody
+import com.example.macc_app.data.remote.ChatResponse
+import com.example.macc_app.data.remote.MessageResponse
+import retrofit2.Retrofit
 
-class ChatViewModel : ViewModel() {
+class ChatViewModelFactory(private val retrofit: Retrofit) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return ChatViewModel(retrofit) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
 
-    private val _messages = mutableStateListOf<Message>()
-    val messages: List<Message> get() = _messages
+    private val myApiService: PythonAnywhereFactorAPI = retrofit.create(PythonAnywhereFactorAPI::class.java)
+
+    val messages = mutableStateListOf<Message>()
 
     val showConfirmationPopup = mutableStateOf(false)
     val lastMessage = mutableStateOf<Message?>(null)
+
+    val lastChat = mutableStateOf<ChatResponse?>(null)
+
 
     private var textToSpeech: TextToSpeech? = null
     private var recognizer: SpeechRecognizer? = null
@@ -52,27 +75,107 @@ class ChatViewModel : ViewModel() {
         recognizer = SpeechRecognizer.createSpeechRecognizer(context)
     }
 
-    fun sendMessage(content: String, type: MessageType, targetLanguage: String, timestamp: Long, context: Context) {
-        val message = Message(isSender = true, originalContent = content, timestamp = timestamp)
-        _messages.add(message)
-
-        viewModelScope.launch {
-            if (type == MessageType.TEXT) {
-                processTextMessage(message, targetLanguage)
-            } else if (type == MessageType.AUDIO) {
-                transcribeAudio(message, targetLanguage)
-            }
-        }
-
-        obtainPosition(context)
+    fun mapMessageResponseListToMessageList(messageResponses: List<MessageResponse>): List<Message> {
+        return messageResponses.map { mapMessageResponseToMessage(it) }
     }
 
-    private fun processTextMessage(message: Message, targetLanguage: String) {
+    private fun mapMessageResponseToMessage(messageResponse: MessageResponse): Message {
+        val mess = Message(
+            originalContent = messageResponse.message
+        )
+        mess.translatedContent.value = messageResponse.translation
+        return mess
+    }
+
+    fun fetchMessages(chatId: Long) {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "Fetch messages with chatId: $chatId")
+                val response = myApiService.fetchMessages(chatId)
+                messages.clear()
+                messages.addAll(mapMessageResponseListToMessageList(response).toMutableList())
+
+                Log.d("ChatViewModel", "Response from API: $response")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error fetching last chat", e)
+            }
+        }
+    }
+
+    fun fetchLastChat(uid: String) {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "Uid: $uid")
+                val response = myApiService.getLastChatFromUser(uid)
+                lastChat.value = response
+                fetchMessages(lastChat.value!!.id)
+                Log.d("ChatViewModel", "Response from API: $response")
+            } catch (e: Exception) {
+                if(uid.isNotEmpty()) {
+                    val body = AddChatBody(name = "New Chat", is_public = false, user_id = uid)
+                    createChat(body)
+                }
+                Log.e("ChatViewModel", "Error fetching last chat", e)
+            }
+        }
+    }
+
+    fun createChat(body: AddChatBody) {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "Uid: $body")
+                val response = myApiService.addChat(body)
+                lastChat.value = response
+                Log.d("ChatViewModel", "Response from addChat API: $response")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error creating chat", e)
+            }
+        }
+    }
+
+    fun addMessage(body: AddChatMessage) {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "Uid: $body")
+                val response = myApiService.addMessage(body)
+                lastChat.value = response
+                Log.d("ChatViewModel", "Response from addMessage API: $response")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error adding message", e)
+            }
+        }
+    }
+
+    fun createUser(body: AddUserBody) {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "Uid: $body")
+                val response = myApiService.addUser(body)
+                Log.d("ChatViewModel", "Response from API: $response")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error creating user", e)
+            }
+        }
+    }
+
+    fun sendMessage(content: String, type: MessageType, targetLanguage: String, timestamp: Long, context: Context) {
+        val message = Message(originalContent = content)
+        messages.add(message)
+        viewModelScope.launch {
+            if (type == MessageType.TEXT) {
+                obtainPosition(context, { cityName -> processTextMessage(message, targetLanguage, cityName)})
+            } else if (type == MessageType.AUDIO) {
+                obtainPosition(context, {cityName ->  transcribeAudio(message, targetLanguage, cityName)})
+            }
+        }
+    }
+
+    private fun processTextMessage(message: Message, targetLanguage: String, cityName: String) {
         viewModelScope.launch {
             try {
                 val languageCode = identifyLanguage(message.originalContent)
                 if (languageCode != "und") {
-                    translateText(message, languageCode, targetLanguage)
+                    translateText(message, languageCode, targetLanguage, cityName)
                 } else {
                     Log.e("ChatViewModel", "Language not identified")
                 }
@@ -95,7 +198,7 @@ class ChatViewModel : ViewModel() {
         }
     }
 
-    private suspend fun translateText(message: Message, sourceLanguage: String, targetLanguage: String) {
+    private suspend fun translateText(message: Message, sourceLanguage: String, targetLanguage: String, cityName: String) {
         withContext(Dispatchers.IO) {
             val options = TranslatorOptions.Builder()
                 .setSourceLanguage(TranslateLanguage.fromLanguageTag(sourceLanguage) ?: TranslateLanguage.ENGLISH)
@@ -109,6 +212,8 @@ class ChatViewModel : ViewModel() {
                 val translatedText = translator.translate(message.originalContent).await()
                 withContext(Dispatchers.Main) {
                     message.translatedContent.value = translatedText
+                    val body = AddChatMessage(message = message.originalContent, translation = translatedText, city = cityName, chat_id = lastChat.value!!.id)
+                    addMessage(body)
                     Log.d("ChatViewModel", "Translated text: $translatedText")
                 }
             } catch (e: Exception) {
@@ -117,13 +222,13 @@ class ChatViewModel : ViewModel() {
         }
     }
 
-    private fun transcribeAudio(message: Message, targetLanguage: String) {
+    private fun transcribeAudio(message: Message, targetLanguage: String, cityName: String) {
         viewModelScope.launch {
             try {
                 val text = recognizeSpeech()
                 if (text.isNotEmpty()) {
                     message.translatedContent.value = text
-                    processTextMessage(message, targetLanguage)
+                    processTextMessage(message, targetLanguage, cityName)
                 } else {
                     Log.e("SpeechRecognition", "No recognizable speech")
                 }
@@ -200,7 +305,7 @@ class ChatViewModel : ViewModel() {
                 val text = recognizeSpeech()
                 if (text.isNotEmpty()) {
                     showConfirmationPopup.value = true
-                    lastMessage.value = Message(isSender = true, originalContent = text, timestamp = System.currentTimeMillis())
+                    lastMessage.value = Message(originalContent = text)
                 }
             } catch (e: Exception) {
                 onError(e.message ?: "Unknown error")
@@ -219,7 +324,7 @@ class ChatViewModel : ViewModel() {
     }
 }
 
-fun obtainPosition(context: Context) {
+fun obtainPosition(context: Context, callback: (cityName: String) -> Unit) {
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
     if (ContextCompat.checkSelfPermission(
@@ -234,11 +339,11 @@ fun obtainPosition(context: Context) {
         )
     } else {
         // Permission already granted, fetch location
-        fetchLocation(context, fusedLocationClient)
+        fetchLocation(context, fusedLocationClient, callback)
     }
 }
 
-private fun fetchLocation(context: Context, fusedLocationClient: FusedLocationProviderClient) {
+private fun fetchLocation(context: Context, fusedLocationClient: FusedLocationProviderClient, callback: (cityName: String) -> Unit) {
     try {
         fusedLocationClient.lastLocation.addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -248,6 +353,9 @@ private fun fetchLocation(context: Context, fusedLocationClient: FusedLocationPr
                     Log.d("ChatViewModel", "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
                     Toast.makeText(context, "Lat: ${location.latitude}, Lng: ${location.longitude}", Toast.LENGTH_LONG).show()
                     val cityName = getCityName(location.latitude, location.longitude, context)
+                    if(!cityName.isNullOrEmpty()) {
+                        callback(cityName)
+                    }
                     Log.d("ChatViewModel", "City: $cityName")
                     Toast.makeText(context, "City: $cityName", Toast.LENGTH_LONG).show()
                 } else {

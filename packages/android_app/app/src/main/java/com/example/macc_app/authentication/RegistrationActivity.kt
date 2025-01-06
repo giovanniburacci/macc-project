@@ -1,5 +1,7 @@
 package com.example.macc_app.authentication
 
+import ChatViewModel
+import ChatViewModelFactory
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
@@ -8,13 +10,17 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.macc_app.MainActivity
 import com.example.macc_app.R
+import com.example.macc_app.data.remote.AddUserBody
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class RegistrationActivity : AppCompatActivity() {
     private lateinit var username: EditText
@@ -26,6 +32,13 @@ class RegistrationActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseDatabase
+
+    val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl("https://ghinoads.pythonanywhere.com")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val viewModel: ChatViewModel by viewModels { ChatViewModelFactory(retrofit) }
 
     companion object {
         private const val EMPTY_USERNAME_MESSAGE = "Please enter username!"
@@ -105,7 +118,8 @@ class RegistrationActivity : AppCompatActivity() {
 
                 val user = User(username, email)
                 val uid = auth.currentUser!!.uid
-
+                val body = AddUserBody(uid = uid, username = username, email = email)
+                viewModel.createUser(body)
                 db.getReference("users/$uid").setValue(user)
                     .addOnSuccessListener {
                         // If sign-up is successful and user data is saved in db, intent to home activity

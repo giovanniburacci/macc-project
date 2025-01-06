@@ -1,9 +1,11 @@
 package com.example.macc_app
 
 import ChatViewModel
+import ChatViewModelFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -31,17 +33,29 @@ import com.example.macc_app.screens.history.HistoryViewOnlyChat
 import com.example.macc_app.screens.LatestChat
 import com.example.macc_app.screens.community.Community
 import com.example.macc_app.screens.community.ViewOnlyChatWithComments
+import com.google.firebase.auth.FirebaseAuth
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : ComponentActivity() {
+
+    val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl("https://ghinoads.pythonanywhere.com")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val viewModel: ChatViewModel by viewModels { ChatViewModelFactory(retrofit) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             AppTheme  {
                 val navController = rememberNavController()
-                val viewModel: ChatViewModel = viewModel()
                 val context = LocalContext.current
                 viewModel.initializeSpeechComponents(context = context)
+                val auth = FirebaseAuth.getInstance()
+                viewModel.fetchLastChat(auth.currentUser!!.uid)
                 AppContent(navController, viewModel)
             }
         }
