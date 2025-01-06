@@ -1,7 +1,6 @@
 package com.example.macc_app.data.remote
 
 import com.google.gson.annotations.SerializedName
-import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
@@ -21,7 +20,7 @@ interface PythonAnywhereFactorAPI {
 
     @Headers("Content-Type: application/json")
     @POST("/message")
-    suspend fun addMessage(@Body body: AddChatMessage): ChatResponse
+    suspend fun addMessage(@Body body: AddChatMessage): Object
 
     @Headers("Content-Type: application/json")
     @POST("/user")
@@ -30,6 +29,8 @@ interface PythonAnywhereFactorAPI {
     @GET("/message/{chatId}")
     suspend fun fetchMessages(@Path("chatId") chatId: Long): List<MessageResponse>
 
+    @GET("/chat/from-user/{uid}")
+    suspend fun fetchHistory(@Path("uid") uid: String): List<ChatResponse>
 
 }
 

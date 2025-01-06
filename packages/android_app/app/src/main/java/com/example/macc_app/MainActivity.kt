@@ -64,6 +64,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppContent(navController: NavHostController, model: ChatViewModel) {
+    val auth = FirebaseAuth.getInstance()
+
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant)) {
         // Top Section: Dynamic Screens
         Box(
@@ -77,7 +79,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
             ) {
                 composable("cameraOrGallery") { CameraOrGallery(model, navController) }
                 composable("latestChat") { LatestChat(model) }
-                composable("chatHistory") { ChatHistory(navController) }
+                composable("chatHistory") { ChatHistory(navController, model) }
                 composable("community") { Community(navController) }
                 composable(
                     "chatHistory/{chatId}", // Define the route with a parameter placeholder
@@ -120,6 +122,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
             FloatingActionButton(
                 onClick = {
                     if (navController.currentBackStackEntry?.destination?.route !== "latestChat") {
+                        model.fetchLastChat(auth.currentUser!!.uid)
                         navController.navigate("latestChat")
                     }
                 },

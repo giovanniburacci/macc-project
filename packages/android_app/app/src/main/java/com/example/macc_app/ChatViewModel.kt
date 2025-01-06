@@ -57,6 +57,8 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
 
     val messages = mutableStateListOf<Message>()
 
+    val history = mutableStateListOf<ChatResponse>()
+
     val showConfirmationPopup = mutableStateOf(false)
     val lastMessage = mutableStateOf<Message?>(null)
 
@@ -87,6 +89,21 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         return mess
     }
 
+    fun fetchHistory(uid: String) {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "Fetch history with uid: $uid")
+                val response = myApiService.fetchHistory(uid)
+                history.clear()
+                history.addAll(response)
+
+                Log.d("ChatViewModel", "Response from history API: $response")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error fetching chats history", e)
+            }
+        }
+    }
+
     fun fetchMessages(chatId: Long) {
         viewModelScope.launch {
             try {
@@ -97,7 +114,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
 
                 Log.d("ChatViewModel", "Response from API: $response")
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error fetching last chat", e)
+                Log.e("ChatViewModel", "Error fetching messages", e)
             }
         }
     }
@@ -138,7 +155,6 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
             try {
                 Log.d("ChatViewModel", "Uid: $body")
                 val response = myApiService.addMessage(body)
-                lastChat.value = response
                 Log.d("ChatViewModel", "Response from addMessage API: $response")
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error adding message", e)
