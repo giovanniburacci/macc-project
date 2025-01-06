@@ -8,8 +8,6 @@ import android.widget.ToggleButton
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,8 +26,12 @@ import com.example.macc_app.SensorView
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.ui.res.painterResource
@@ -39,6 +41,7 @@ import com.example.macc_app.components.ExplanationBox
 import com.example.macc_app.components.MessageInput
 import com.example.macc_app.components.MessagesList
 import com.example.macc_app.components.RecognizedTextDialog
+import com.example.macc_app.data.remote.AddChatBody
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,7 +108,26 @@ fun LatestChat(viewModel: ChatViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Current chat") }, // Set the title
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = {
+                                val body = AddChatBody(name = "New Chat", is_public = false, user_id = viewModel.lastChat.value!!.user_id)
+                                viewModel.createChat(body, true)
+                            },
+                            modifier = Modifier
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = "Add new chat",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Text("Current chat")
+                    }
+                },
                 actions = {
                     Row(
                         modifier = Modifier.align(Alignment.CenterVertically),

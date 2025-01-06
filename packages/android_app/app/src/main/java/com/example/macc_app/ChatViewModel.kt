@@ -147,19 +147,22 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
             } catch (e: Exception) {
                 if(uid.isNotEmpty()) {
                     val body = AddChatBody(name = "New Chat", is_public = false, user_id = uid)
-                    createChat(body)
+                    createChat(body, false)
                 }
                 Log.e("ChatViewModel", "Error fetching last chat", e)
             }
         }
     }
 
-    fun createChat(body: AddChatBody) {
+    fun createChat(body: AddChatBody, clearMessages: Boolean) {
         viewModelScope.launch {
             try {
                 Log.d("ChatViewModel", "Uid: $body")
                 val response = myApiService.addChat(body)
                 lastChat.value = response
+                if(clearMessages) {
+                    messages.clear()
+                }
                 Log.d("ChatViewModel", "Response from addChat API: $response")
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error creating chat", e)
