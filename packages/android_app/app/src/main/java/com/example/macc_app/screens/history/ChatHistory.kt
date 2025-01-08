@@ -3,11 +3,18 @@ package com.example.macc_app.screens.history
 import ChatViewModel
 import android.util.Log
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
@@ -15,25 +22,22 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.macc_app.R
 import com.google.firebase.auth.FirebaseAuth
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,16 +90,6 @@ fun ChatHistory(navController: NavController, viewModel: ChatViewModel) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(text = chat.name, style = MaterialTheme.typography.titleLarge)
-                                /*IconButton(
-                                    onClick = { showModal = true }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Edit,
-                                        contentDescription = "Edit chat name",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }*/
                                 Spacer(modifier = Modifier.weight(1f))
                                 AssistChip(
                                     onClick = {},
@@ -116,7 +110,7 @@ fun ChatHistory(navController: NavController, viewModel: ChatViewModel) {
                                 )
                             }
                             Text(
-                                text = chat.creation_time,
+                                text = formatDate(chat.creation_time),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -127,27 +121,10 @@ fun ChatHistory(navController: NavController, viewModel: ChatViewModel) {
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
-                        /*if (showModal) {
-                            ChangeNameModal(
-                                currentName = chat.name,
-                                onDismiss = { showModal = false },
-                                onSave = { newName ->
-                                    Log.d(
-                                        "ChatHistory",
-                                        "Saving new name: $newName for chat ${chat.id}"
-                                    )
-                                    showModal = false
-                                }
-                            )
-                        }*/
                     }
-
-
                 }
             }
         }
-
-
     }
 }
 
@@ -156,5 +133,22 @@ fun shortenText(text: String, maxLength: Int): String {
         text.take(maxLength) + "..."
     } else {
         text
+    }
+}
+
+fun formatDate(dateString: String): String {
+    return try {
+        // Parse the input date
+        val inputFormatter = DateTimeFormatter.RFC_1123_DATE_TIME
+        val date = ZonedDateTime.parse(dateString, inputFormatter)
+
+        // Format the date for display
+        val outputFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a", Locale.ENGLISH)
+        Log.d("ChatHistory", "Formatted date: ${outputFormatter.format(date)} from ${dateString}, ${Locale.getDefault()}")
+        date.format(outputFormatter)
+    } catch (e: Exception) {
+        // Return original date string if formatting fails
+        Log.e("ChatHistory", "Error format date from ${dateString}")
+        dateString
     }
 }

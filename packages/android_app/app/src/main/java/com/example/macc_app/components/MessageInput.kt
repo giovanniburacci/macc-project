@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,7 +53,7 @@ fun MessageInput(
             .padding(8.dp)
             .height(56.dp)
     ) {
-        androidx.compose.material3.TextField(
+        OutlinedTextField(
             value = text.text,
             onValueChange = { text = TextFieldValue(it) },
             modifier = Modifier

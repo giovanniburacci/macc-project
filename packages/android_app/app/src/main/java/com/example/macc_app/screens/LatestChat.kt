@@ -1,48 +1,55 @@
 package com.example.macc_app.screens
 
+import ChangeNameModal
 import ChatViewModel
+import MessageType
 import android.Manifest
-import android.graphics.Paint.Align
+import android.util.Log
 import android.widget.Toast
-import android.widget.ToggleButton
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.macc_app.SensorView
-import kotlinx.coroutines.launch
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.ui.res.painterResource
 import com.example.macc_app.R
-import com.example.macc_app.components.ChatBubble
+import com.example.macc_app.SensorView
 import com.example.macc_app.components.ExplanationBox
 import com.example.macc_app.components.MessageInput
 import com.example.macc_app.components.MessagesList
 import com.example.macc_app.components.RecognizedTextDialog
 import com.example.macc_app.data.remote.AddChatBody
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +70,8 @@ fun LatestChat(viewModel: ChatViewModel) {
     var pitchEnabled by remember { mutableStateOf(true) }
     var rollEnabled by remember { mutableStateOf(true) }
     var yawEnabled by remember { mutableStateOf(true) }
+
+    var showModal by remember { mutableStateOf(false) }
 
     // Functions to handle the toggle actions
     val onPitchToggle: (Boolean) -> Unit = { isChecked ->
@@ -114,10 +123,14 @@ fun LatestChat(viewModel: ChatViewModel) {
                     ) {
                         IconButton(
                             onClick = {
-                                val body = AddChatBody(name = "New Chat", is_public = false, user_id = viewModel.lastChat.value!!.user_id)
+                                val body = AddChatBody(
+                                    name = "New Chat",
+                                    is_public = false,
+                                    user_id = viewModel.lastChat.value!!.user_id
+                                )
                                 viewModel.createChat(body, true)
                             },
-                            modifier = Modifier
+                            modifier = Modifier.size(20.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Add,
@@ -125,7 +138,17 @@ fun LatestChat(viewModel: ChatViewModel) {
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
-                        Text("Current chat")
+                        Text(viewModel.lastChat.value!!.name)
+                        IconButton(
+                            onClick = { showModal = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Edit,
+                                contentDescription = "Edit chat name",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 },
                 actions = {
@@ -136,18 +159,22 @@ fun LatestChat(viewModel: ChatViewModel) {
                         Switch(
                             thumbContent = {
                                 Icon(
-                                    painter = painterResource(if(!isPublic) R.drawable.outline_lock_24 else R.drawable.baseline_lock_open_24),
+                                    painter = painterResource(if (!isPublic) R.drawable.outline_lock_24 else R.drawable.baseline_lock_open_24),
                                     contentDescription = null,
                                     modifier = Modifier.size(SwitchDefaults.IconSize),
-                                )},
+                                )
+                            },
                             checked = isPublic,
                             onCheckedChange = {
                                 viewModel.updateIsChatPublic(viewModel.lastChat.value!!.id)
                             }
                         )
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Button(onClick = { showExplanation = true }) {
-                            Text("How to use 2D", fontWeight = MaterialTheme.typography.titleMedium.fontWeight)
+                            Text(
+                                "How to use 2D",
+                                fontWeight = MaterialTheme.typography.titleMedium.fontWeight
+                            )
                         }
                     }
 
@@ -156,7 +183,7 @@ fun LatestChat(viewModel: ChatViewModel) {
         }
     ) { paddingValues ->
 
-        if(showExplanation) {
+        if (showExplanation) {
             ExplanationBox(
                 onDismiss = { showExplanation = false },
                 pitchEnabled = pitchEnabled,
@@ -168,9 +195,23 @@ fun LatestChat(viewModel: ChatViewModel) {
             )
         }
 
-        if(showConfirmationPopup.value) {
+        if (showModal) {
+            ChangeNameModal(
+                currentName = viewModel.lastChat.value!!.name,
+                onDismiss = { showModal = false },
+                onSave = { newName ->
+                    Log.d(
+                        "ChatHistory",
+                        "Saving new name: $newName for chat ${viewModel.lastChat.value!!.id}"
+                    )
+                    showModal = false
+                }
+            )
+        }
+
+        if (showConfirmationPopup.value) {
             RecognizedTextDialog(
-                onDismiss = {showConfirmationPopup.value = false; lastMessage.value = null},
+                onDismiss = { showConfirmationPopup.value = false; lastMessage.value = null },
                 onConfirm = {
                     viewModel.sendMessage(
                         lastMessage.value!!.originalContent,
@@ -184,22 +225,27 @@ fun LatestChat(viewModel: ChatViewModel) {
 
                 },
                 showDialog = showConfirmationPopup.value,
-                text = if(lastMessage.value != null) lastMessage.value!!.originalContent else ""
+                text = if (lastMessage.value != null) lastMessage.value!!.originalContent else ""
             )
         }
 
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues) // Apply padding from Scaffold
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues) // Apply padding from Scaffold
         ) {
-            Column(modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)) {
-                MessagesList(modifier = Modifier.
-                weight(1f)
-                    .padding(16.dp)
-                    .fillMaxWidth(),
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 80.dp)
+            ) {
+                MessagesList(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(16.dp)
+                        .fillMaxWidth(),
                     messages,
-                    onLongPressChatBubble = {
-                            selectedText ->
+                    onLongPressChatBubble = { selectedText ->
                         showPopup = true
                         chatBubbleText = selectedText
 
@@ -215,7 +261,13 @@ fun LatestChat(viewModel: ChatViewModel) {
                         text = {
                             AndroidView(
                                 factory = { context ->
-                                    SensorView(context, chatBubbleText, pitchEnabled, rollEnabled, yawEnabled)
+                                    SensorView(
+                                        context,
+                                        chatBubbleText,
+                                        pitchEnabled,
+                                        rollEnabled,
+                                        yawEnabled
+                                    )
                                 }
                             )
                         },

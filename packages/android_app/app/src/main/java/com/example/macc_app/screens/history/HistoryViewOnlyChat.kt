@@ -1,6 +1,8 @@
 package com.example.macc_app.screens.history
 
+import ChangeNameModal
 import ChatViewModel
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,10 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -41,13 +46,14 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
 
     var showExplanation by remember { mutableStateOf(false) }
 
-
     // Define the state variables to track whether the pitch, roll, and yaw are enabled
     var pitchEnabled by remember { mutableStateOf(true) }
     var rollEnabled by remember { mutableStateOf(true) }
     var yawEnabled by remember { mutableStateOf(true) }
     var showPopup by remember { mutableStateOf(false) }
     var chatBubbleText by remember { mutableStateOf("") }
+
+    var showModal by remember { mutableStateOf(false) }
 
     // Functions to handle the toggle actions
     val onPitchToggle: (Boolean) -> Unit = { isChecked ->
@@ -68,7 +74,23 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Your chat") }, // Set the title
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(viewModel.lastChat.value!!.name)
+                        IconButton(
+                            onClick = { showModal = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Edit,
+                                contentDescription = "Edit chat name",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }, // Set the title
                 actions = {
                     Row(
                         modifier = Modifier.align(Alignment.CenterVertically),
@@ -77,7 +99,7 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
                         Switch(
                             thumbContent = {
                                 Icon(
-                                    painter = painterResource(if(!isPublic) R.drawable.outline_lock_24 else R.drawable.baseline_lock_open_24),
+                                    painter = painterResource(if (!isPublic) R.drawable.outline_lock_24 else R.drawable.baseline_lock_open_24),
                                     contentDescription = null,
                                     modifier = Modifier.size(SwitchDefaults.IconSize),
                                 )
@@ -89,11 +111,14 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Button(onClick = { showExplanation = true }) {
-                            Text("How to use 2D", fontWeight = MaterialTheme.typography.titleMedium.fontWeight)
+                            Text(
+                                "How to use 2D",
+                                fontWeight = MaterialTheme.typography.titleMedium.fontWeight
+                            )
                         }
                     }
 
-                }            )
+                })
         }
     ) { paddingValues ->
 
@@ -108,13 +133,34 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
                 onYawToggle = onYawToggle
             )
         }
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues) // Apply padding from Scaffold
+
+        if (showModal) {
+            ChangeNameModal(
+                currentName = viewModel.lastChat.value!!.name,
+                onDismiss = { showModal = false },
+                onSave = { newName ->
+                    Log.d(
+                        "ChatHistory",
+                        "Saving new name: $newName for chat ${viewModel.lastChat.value!!.id}"
+                    )
+                    showModal = false
+                }
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues) // Apply padding from Scaffold
         ) {
-            Column(modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 80.dp)
+            ) {
                 MessagesList(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
                         .padding(16.dp)
                         .fillMaxWidth(),
                     messages,
@@ -134,7 +180,13 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
                         text = {
                             AndroidView(
                                 factory = { context ->
-                                    SensorView(context, chatBubbleText, pitchEnabled, rollEnabled, yawEnabled)
+                                    SensorView(
+                                        context,
+                                        chatBubbleText,
+                                        pitchEnabled,
+                                        rollEnabled,
+                                        yawEnabled
+                                    )
                                 }
                             )
                         },
