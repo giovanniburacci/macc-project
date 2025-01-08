@@ -36,6 +36,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.macc_app.data.remote.AddChatBody
 import com.example.macc_app.data.remote.AddChatMessage
 import com.example.macc_app.data.remote.AddUserBody
+import com.example.macc_app.data.remote.ChangeNameBody
 import com.example.macc_app.data.remote.ChatResponse
 import com.example.macc_app.data.remote.MessageResponse
 import retrofit2.Retrofit
@@ -99,6 +100,19 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 Log.d("ChatViewModel", "Response from history API: $response")
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error fetching chats history", e)
+            }
+        }
+    }
+
+    fun updateChatName(chatId: Long, name: String) {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "Update chat name with name: $name for chat $chatId")
+                val body = ChangeNameBody(chat_id = chatId, name = name)
+                myApiService.updateChatName(body)
+                Log.d("ChatViewModel", "Response from API:")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error changing name", e)
             }
         }
     }

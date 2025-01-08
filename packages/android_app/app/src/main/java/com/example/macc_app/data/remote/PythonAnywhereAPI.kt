@@ -36,6 +36,9 @@ interface PythonAnywhereFactorAPI {
     @PUT("/chat/{chatId}")
     suspend fun updateIsChatPublic(@Path("chatId") chatId: Long): ChatResponse
 
+    @PUT("/chat/change-name")
+    suspend fun updateChatName(@Body body: ChangeNameBody): Object
+
 }
 
 data class PythonAnywhereFactorResponse(
@@ -59,6 +62,7 @@ data class ChatResponse(
     @SerializedName ("last_update") val last_update: String,
     @SerializedName ("name") val name: String,
     @SerializedName ("user_id") val user_id: String,
+    @SerializedName ("preview") val preview: String,
 )
 
 data class AddChatBody(
@@ -88,4 +92,9 @@ data class MessageResponse(
     @SerializedName ("chat_id") val chat_id: Long,
     @SerializedName ("creation_time") val creation_time: String,
     @SerializedName ("last_update") val last_update: String,
+)
+
+data class ChangeNameBody(
+    @SerializedName ("chat_id") val chat_id: Long,
+    @SerializedName ("name") val name: String,
 )
