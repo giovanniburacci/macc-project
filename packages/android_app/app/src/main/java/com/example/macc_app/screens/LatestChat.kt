@@ -57,9 +57,11 @@ fun LatestChat(viewModel: ChatViewModel) {
     val context = LocalContext.current
     val messages = viewModel.messages
 
+
     val showConfirmationPopup = viewModel.showConfirmationPopup
     val lastMessage = viewModel.lastMessage
     val isPublic = viewModel.lastChat.value!!.is_public
+    val chatId = viewModel.lastChat.value!!.id
 
     var showPopup by remember { mutableStateOf(false) }
     var chatBubbleText by remember { mutableStateOf("") }
@@ -204,6 +206,7 @@ fun LatestChat(viewModel: ChatViewModel) {
                         "ChatHistory",
                         "Saving new name: $newName for chat ${viewModel.lastChat.value!!.id}"
                     )
+                    viewModel.updateChatName(chatId, newName)
                     showModal = false
                 }
             )

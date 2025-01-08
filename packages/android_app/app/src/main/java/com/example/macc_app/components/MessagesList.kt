@@ -14,14 +14,16 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.macc_app.data.remote.Comment
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun MessagesList(modifier: Modifier, messages: MutableList<Message>?, onLongPressChatBubble: (text: String) -> Unit, showExplanation: Boolean, showConfirmationPopup: Boolean, comments: List<String>?) {
+fun MessagesList(modifier: Modifier, messages: MutableList<Message>?, onLongPressChatBubble: (text: String) -> Unit, showExplanation: Boolean, showConfirmationPopup: Boolean, comments: SnapshotStateList<Comment>?) {
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -77,7 +79,7 @@ fun MessagesList(modifier: Modifier, messages: MutableList<Message>?, onLongPres
                 )
             }
             itemsIndexed(comments) { index, comment ->
-                CommentBubble("%user-name%", comment)
+                CommentBubble("Gigi finizio", comment.message)
             }
         }
 

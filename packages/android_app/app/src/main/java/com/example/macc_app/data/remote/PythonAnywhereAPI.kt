@@ -30,12 +30,19 @@ interface PythonAnywhereFactorAPI {
     @GET("/message/{chatId}")
     suspend fun fetchMessages(@Path("chatId") chatId: Long): List<MessageResponse>
 
+    @GET("/comment/{chatId}")
+    suspend fun fetchComments(@Path("chatId") chatId: Long): List<Comment>
+
     @GET("/chat/from-user/{uid}")
     suspend fun fetchHistory(@Path("uid") uid: String): List<ChatResponse>
+
+    @GET("/chat/community")
+    suspend fun fetchCommunity(): List<ChatResponse>
 
     @PUT("/chat/{chatId}")
     suspend fun updateIsChatPublic(@Path("chatId") chatId: Long): ChatResponse
 
+    @Headers("Content-Type: application/json")
     @PUT("/chat/change-name")
     suspend fun updateChatName(@Body body: ChangeNameBody): Object
 
@@ -60,9 +67,9 @@ data class ChatResponse(
     @SerializedName ("id") val id: Long,
     @SerializedName ("is_public") val is_public: Boolean,
     @SerializedName ("last_update") val last_update: String,
-    @SerializedName ("name") val name: String,
+    @SerializedName ("name") var name: String,
     @SerializedName ("user_id") val user_id: String,
-    @SerializedName ("preview") val preview: String,
+    @SerializedName ("preview") val preview: String?,
 )
 
 data class AddChatBody(
@@ -97,4 +104,13 @@ data class MessageResponse(
 data class ChangeNameBody(
     @SerializedName ("chat_id") val chat_id: Long,
     @SerializedName ("name") val name: String,
+)
+
+data class Comment(
+    @SerializedName ("id") val id: Long,
+    @SerializedName ("chat_id") val chat_id: Long,
+    @SerializedName ("creation_time") val creation_time: String,
+    @SerializedName ("last_update") val last_update: String,
+    @SerializedName ("message") val message: String,
+    @SerializedName ("user_id") val user_id: String,
 )

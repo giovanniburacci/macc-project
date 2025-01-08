@@ -80,7 +80,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                 composable("cameraOrGallery") { CameraOrGallery(model, navController) }
                 composable("latestChat") { LatestChat(model) }
                 composable("chatHistory") { ChatHistory(navController, model) }
-                composable("community") { Community(navController) }
+                composable("community") { Community(navController, model) }
                 composable(
                     "chatHistory/{chatId}", // Define the route with a parameter placeholder
                     arguments = listOf(navArgument("chatId") { type = NavType.StringType })

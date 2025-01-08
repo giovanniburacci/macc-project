@@ -38,6 +38,7 @@ import com.example.macc_app.data.remote.AddChatMessage
 import com.example.macc_app.data.remote.AddUserBody
 import com.example.macc_app.data.remote.ChangeNameBody
 import com.example.macc_app.data.remote.ChatResponse
+import com.example.macc_app.data.remote.Comment
 import com.example.macc_app.data.remote.MessageResponse
 import retrofit2.Retrofit
 import java.io.IOException
@@ -58,6 +59,10 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     val messages = mutableStateListOf<Message>()
 
     val history = mutableStateListOf<ChatResponse>()
+
+    val comments = mutableStateListOf<Comment>()
+
+    val community = mutableStateListOf<ChatResponse>()
 
     val showConfirmationPopup = mutableStateOf(false)
     val lastMessage = mutableStateOf<Message?>(null)
@@ -104,13 +109,30 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         }
     }
 
+    fun fetchCommunity() {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "Fetch community")
+                val response = myApiService.fetchCommunity()
+                community.clear()
+                community.addAll(response)
+                Log.d("ChatViewModel", "Response from community API: $response")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error fetching chats community", e)
+            }
+        }
+    }
+
     fun updateChatName(chatId: Long, name: String) {
         viewModelScope.launch {
             try {
                 Log.d("ChatViewModel", "Update chat name with name: $name for chat $chatId")
                 val body = ChangeNameBody(chat_id = chatId, name = name)
-                myApiService.updateChatName(body)
-                Log.d("ChatViewModel", "Response from API:")
+                val resp = myApiService.updateChatName(body)
+                Log.d("ChatViewModel", "Response from API: ${resp}")
+                val updatedChat = lastChat.value!!.copy()
+                updatedChat.name = name
+                lastChat.value = updatedChat
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error changing name", e)
             }
@@ -125,9 +147,23 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 messages.clear()
                 messages.addAll(mapMessageResponseListToMessageList(response).toMutableList())
 
-                Log.d("ChatViewModel", "Response from API: $response")
+                Log.d("ChatViewModel", "Response from fetchMessages API: $response")
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error fetching messages", e)
+            }
+        }
+    }
+
+    fun fetchComments(chatId: Long) {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "Fetch comments with chatId: $chatId")
+                val response = myApiService.fetchComments(chatId)
+                comments.clear()
+                comments.addAll(comments)
+                Log.d("ChatViewModel", "Response from fetchComments API: $response")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error fetching comments", e)
             }
         }
     }
@@ -156,7 +192,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 val response = myApiService.getLastChatFromUser(uid)
                 lastChat.value = response
                 fetchMessages(lastChat.value!!.id)
-                Log.d("ChatViewModel", "Response from API: $response")
+                Log.d("ChatViewModel", "Response from fetchLastChat API: $response")
             } catch (e: Exception) {
                 if(uid.isNotEmpty()) {
                     val body = AddChatBody(name = "New Chat", is_public = false, user_id = uid)

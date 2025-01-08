@@ -1,6 +1,7 @@
 package com.example.macc_app.screens.history
 
 import ChatViewModel
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -46,8 +47,6 @@ fun ChatHistory(navController: NavController, viewModel: ChatViewModel) {
     viewModel.fetchHistory(auth.currentUser!!.uid)
 
     val history = viewModel.history
-
-    //var showModal by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -115,8 +114,7 @@ fun ChatHistory(navController: NavController, viewModel: ChatViewModel) {
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = shortenText(/*chat.preview*/"This is a preview of the card content for item $index.",
-                                    50
+                                text = shortenText(if(!chat.preview.isNullOrEmpty()) chat.preview else "", 30
                                 ),
                                 style = MaterialTheme.typography.bodySmall
                             )
@@ -136,6 +134,7 @@ fun shortenText(text: String, maxLength: Int): String {
     }
 }
 
+@SuppressLint("NewApi")
 fun formatDate(dateString: String): String {
     return try {
         // Parse the input date

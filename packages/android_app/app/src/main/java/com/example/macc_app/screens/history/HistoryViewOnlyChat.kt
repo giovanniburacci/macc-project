@@ -143,6 +143,7 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
                         "ChatHistory",
                         "Saving new name: $newName for chat ${viewModel.lastChat.value!!.id}"
                     )
+                    viewModel.updateChatName(viewModel.lastChat.value!!.id, newName)
                     showModal = false
                 }
             )

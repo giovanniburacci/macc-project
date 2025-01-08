@@ -51,13 +51,13 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
     }
 
     val showConfirmationPopup = viewModel.showConfirmationPopup
-    // TBD these messages should be replaced
+
     val messages = viewModel.messages
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Chat by %user-name%") }, // Set the title
+                title = { Text(viewModel.lastChat.value!!.name) },
                 actions = { Button(onClick = { showExplanation = true }) { Text("How to use 2D", fontWeight = MaterialTheme.typography.titleMedium.fontWeight) } }
             )
         }
@@ -91,7 +91,7 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
                     },
                     showExplanation,
                     showConfirmationPopup.value,
-                    comments = listOf("This is a comment", "This is another comment")
+                    comments = viewModel.comments
                 )
                 if (showPopup) {
                     AlertDialog(
