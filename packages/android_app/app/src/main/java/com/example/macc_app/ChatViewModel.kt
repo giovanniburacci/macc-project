@@ -29,18 +29,17 @@ import android.app.Activity
 import android.location.Geocoder
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.MutableLiveData
 import com.example.macc_app.data.remote.PythonAnywhereFactorAPI
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.FusedLocationProviderClient
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.macc_app.data.remote.AddChatBody
 import com.example.macc_app.data.remote.AddChatMessage
 import com.example.macc_app.data.remote.AddUserBody
 import com.example.macc_app.data.remote.ChatResponse
 import com.example.macc_app.data.remote.MessageResponse
 import retrofit2.Retrofit
+import java.io.IOException
 
 class ChatViewModelFactory(private val retrofit: Retrofit) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -408,15 +407,18 @@ private fun fetchLocation(context: Context, fusedLocationClient: FusedLocationPr
 }
 
 private fun getCityName(lat: Double,long: Double, context: Context): String?{
-    var cityName: String?
-    val geoCoder = Geocoder(context, Locale.getDefault())
-    val address = geoCoder.getFromLocation(lat,long,1)
-    cityName = address?.get(0)?.adminArea
-    if (cityName == null){
-        cityName = address?.get(0)?.locality
-        if (cityName == null){
-            cityName = address?.get(0)?.subAdminArea
+    return try {
+        val geocoder = Geocoder(context, Locale.getDefault())
+        val addresses = geocoder.getFromLocation(lat, long, 1) // Get one result
+        if (!addresses.isNullOrEmpty()) {
+            val address = addresses[0]
+            // Return the locality for the city name
+            return address.locality ?: address.subAdminArea // Use subAdminArea as fallback if locality is null
+        } else {
+            return null // No address found
         }
+    } catch (e: IOException) {
+        e.printStackTrace()
+        null // Handle Geocoder service not available
     }
-    return cityName
 }
