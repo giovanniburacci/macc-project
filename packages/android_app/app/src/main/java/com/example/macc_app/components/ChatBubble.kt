@@ -1,13 +1,22 @@
 package com.example.macc_app.components
 
 import Message
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -34,8 +43,38 @@ fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boo
                 )
             }
     ) {
+        Log.d("ChatBubble", "Original content: ${message}")
         if(!translation) {
-            Text(text = message.originalContent, fontSize = 16.sp)
+            Column(
+            ) {
+                // Main Text
+                Text(
+                    text = message.originalContent,
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(bottom = 4.dp) // Space between the main text and city
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.align(Alignment.Start) // Align to the start of the column
+                ) {
+                    // Small Icon
+                    Icon(
+                        imageVector = Icons.Filled.LocationOn,
+                        contentDescription = "Location Icon",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(12.dp)
+                    )
+
+                    // City Text
+                    Text(
+                        text = message.city.value,
+                        fontSize = 8.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
         }
         else {
             Text(text = message.translatedContent.value, fontSize = 16.sp)

@@ -1,11 +1,14 @@
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.State
 
 data class Message(
     val originalContent: String,
-    private val _translatedContent: String = "..." // default to content
+    private val _translatedContent: String = "...", // default to content
+    private val _city: String = "Unknown"
 ) {
     var translatedContent = mutableStateOf(_translatedContent)
+        private set
+
+    var city = mutableStateOf(_city)
         private set
 
 }

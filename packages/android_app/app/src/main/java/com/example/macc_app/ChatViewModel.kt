@@ -91,6 +91,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
             originalContent = messageResponse.message
         )
         mess.translatedContent.value = messageResponse.translation
+        mess.city.value = messageResponse.city
         return mess
     }
 
