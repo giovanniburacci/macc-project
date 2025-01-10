@@ -1,10 +1,12 @@
 package com.example.macc_app.screens.community
 
 import ChatViewModel
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -18,12 +20,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.macc_app.SensorView
+import com.example.macc_app.components.CommentInputBar
 import com.example.macc_app.components.ExplanationBox
 import com.example.macc_app.components.MessagesList
+import com.example.macc_app.data.remote.AddCommentBody
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,12 +58,22 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
     val showConfirmationPopup = viewModel.showConfirmationPopup
 
     val messages = viewModel.messages
+    val comments = viewModel.comments
+
+    Log.d("ViewOnlyChatWithComments", "Comments: $comments")
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(viewModel.lastChat.value!!.name) },
-                actions = { Button(onClick = { showExplanation = true }) { Text("How to use 2D", fontWeight = MaterialTheme.typography.titleMedium.fontWeight) } }
+                actions = {
+                    Button(onClick = { showExplanation = true }) {
+                        Text(
+                            "How to use 2D",
+                            fontWeight = MaterialTheme.typography.titleMedium.fontWeight
+                        )
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -74,13 +89,19 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
                 onYawToggle = onYawToggle
             )
         }
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues) // Apply padding from Scaffold
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues) // Apply padding from Scaffold
         ) {
-            Column(modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 150.dp)
+            ) {
                 MessagesList(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
                         .padding(16.dp)
                         .fillMaxWidth(),
                     messages,
@@ -100,7 +121,13 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
                         text = {
                             AndroidView(
                                 factory = { context ->
-                                    SensorView(context, chatBubbleText, pitchEnabled, rollEnabled, yawEnabled)
+                                    SensorView(
+                                        context,
+                                        chatBubbleText,
+                                        pitchEnabled,
+                                        rollEnabled,
+                                        yawEnabled
+                                    )
                                 }
                             )
                         },
@@ -112,6 +139,24 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
                     )
                 }
             }
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(bottom = 80.dp)
+            ) {
+                CommentInputBar() { commentText ->
+                    run {
+                        val body = AddCommentBody(
+                            commentText,
+                            viewModel.lastChat.value!!.user_id,
+                            viewModel.lastChat.value!!.id
+                        )
+                        viewModel.addComment(body)
+                    }
+                }
+            }
         }
+
     }
 }

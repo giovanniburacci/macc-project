@@ -35,6 +35,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import androidx.lifecycle.ViewModelProvider
 import com.example.macc_app.data.remote.AddChatBody
 import com.example.macc_app.data.remote.AddChatMessage
+import com.example.macc_app.data.remote.AddCommentBody
 import com.example.macc_app.data.remote.AddUserBody
 import com.example.macc_app.data.remote.ChangeNameBody
 import com.example.macc_app.data.remote.ChatResponse
@@ -161,10 +162,23 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 Log.d("ChatViewModel", "Fetch comments with chatId: $chatId")
                 val response = myApiService.fetchComments(chatId)
                 comments.clear()
-                comments.addAll(comments)
+                comments.addAll(response)
                 Log.d("ChatViewModel", "Response from fetchComments API: $response")
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error fetching comments", e)
+            }
+        }
+    }
+
+    fun addComment(body: AddCommentBody) {
+        viewModelScope.launch {
+            try {
+                Log.d("ChatViewModel", "Uid: $body")
+                val response = myApiService.addComment(body)
+                fetchComments(body.chat_id)
+                Log.d("ChatViewModel", "Response from addComment API: $response")
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error adding comment", e)
             }
         }
     }

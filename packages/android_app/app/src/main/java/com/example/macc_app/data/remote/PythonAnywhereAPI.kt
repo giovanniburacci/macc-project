@@ -46,6 +46,10 @@ interface PythonAnywhereFactorAPI {
     @PUT("/chat/change-name")
     suspend fun updateChatName(@Body body: ChangeNameBody): Object
 
+    @Headers("Content-Type: application/json")
+    @POST("/comment")
+    suspend fun addComment(@Body body: AddCommentBody): Comment
+
 }
 
 data class PythonAnywhereFactorResponse(
@@ -55,62 +59,68 @@ data class PythonAnywhereFactorResponse(
 )
 
 data class UserResponse(
-    @SerializedName ("creation_time") val creation_time: String,
-    @SerializedName ("email") val email: String,
-    @SerializedName ("last_update") val last_update: String,
-    @SerializedName ("uid") val uid: String,
-    @SerializedName ("username") val username: String,
+    @SerializedName("creation_time") val creation_time: String,
+    @SerializedName("email") val email: String,
+    @SerializedName("last_update") val last_update: String,
+    @SerializedName("uid") val uid: String,
+    @SerializedName("username") val username: String,
 )
 
 data class ChatResponse(
-    @SerializedName ("creation_time") val creation_time: String,
-    @SerializedName ("id") val id: Long,
-    @SerializedName ("is_public") val is_public: Boolean,
-    @SerializedName ("last_update") val last_update: String,
-    @SerializedName ("name") var name: String,
-    @SerializedName ("user_id") val user_id: String,
-    @SerializedName ("preview") val preview: String?,
+    @SerializedName("creation_time") val creation_time: String,
+    @SerializedName("id") val id: Long,
+    @SerializedName("is_public") val is_public: Boolean,
+    @SerializedName("last_update") val last_update: String,
+    @SerializedName("name") var name: String,
+    @SerializedName("user_id") val user_id: String,
+    @SerializedName("preview") val preview: String?,
 )
 
 data class AddChatBody(
-    @SerializedName ("name") val name: String,
-    @SerializedName ("is_public") val is_public: Boolean,
-    @SerializedName ("user_id") val user_id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("is_public") val is_public: Boolean,
+    @SerializedName("user_id") val user_id: String,
 )
 
 data class AddChatMessage(
-    @SerializedName ("message") val message: String,
-    @SerializedName ("translation") val translation: String,
-    @SerializedName ("city") val city: String,
-    @SerializedName ("chat_id") val chat_id: Long,
+    @SerializedName("message") val message: String,
+    @SerializedName("translation") val translation: String,
+    @SerializedName("city") val city: String,
+    @SerializedName("chat_id") val chat_id: Long,
 )
 
 data class AddUserBody(
-    @SerializedName ("uid") val uid: String,
-    @SerializedName ("username") val username: String,
-    @SerializedName ("email") val email: String,
+    @SerializedName("uid") val uid: String,
+    @SerializedName("username") val username: String,
+    @SerializedName("email") val email: String,
 )
 
 data class MessageResponse(
-    @SerializedName ("id") val id: Long,
-    @SerializedName ("message") val message: String,
-    @SerializedName ("translation") val translation: String,
-    @SerializedName ("city") val city: String,
-    @SerializedName ("chat_id") val chat_id: Long,
-    @SerializedName ("creation_time") val creation_time: String,
-    @SerializedName ("last_update") val last_update: String,
+    @SerializedName("id") val id: Long,
+    @SerializedName("message") val message: String,
+    @SerializedName("translation") val translation: String,
+    @SerializedName("city") val city: String,
+    @SerializedName("chat_id") val chat_id: Long,
+    @SerializedName("creation_time") val creation_time: String,
+    @SerializedName("last_update") val last_update: String,
 )
 
 data class ChangeNameBody(
-    @SerializedName ("chat_id") val chat_id: Long,
-    @SerializedName ("name") val name: String,
+    @SerializedName("chat_id") val chat_id: Long,
+    @SerializedName("name") val name: String,
 )
 
 data class Comment(
-    @SerializedName ("id") val id: Long,
-    @SerializedName ("chat_id") val chat_id: Long,
-    @SerializedName ("creation_time") val creation_time: String,
-    @SerializedName ("last_update") val last_update: String,
-    @SerializedName ("message") val message: String,
-    @SerializedName ("user_id") val user_id: String,
+    @SerializedName("id") val id: Long,
+    @SerializedName("chat_id") val chat_id: Long,
+    @SerializedName("creation_time") val creation_time: String,
+    @SerializedName("last_update") val last_update: String,
+    @SerializedName("message") val message: String,
+    @SerializedName("user_id") val user_id: String,
+)
+
+data class AddCommentBody(
+    @SerializedName("message") val message: String,
+    @SerializedName("user_id") val user_id: String,
+    @SerializedName("chat_id") val chat_id: Long,
 )
