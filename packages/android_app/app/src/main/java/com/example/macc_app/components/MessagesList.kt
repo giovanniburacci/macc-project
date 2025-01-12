@@ -51,6 +51,7 @@ fun MessagesList(
             itemsIndexed(messages) { index, message ->
                 Column(modifier = Modifier.fillMaxSize()) {
                     val isTranslation = message.translatedContent.value != "..."
+                    val city = message.city.value
                     ChatBubble(
                         message,
                         Modifier.align(Alignment.Start),
@@ -59,7 +60,8 @@ fun MessagesList(
                             onLongPressChatBubble(selectedText)
                         },
                         showExplanation,
-                        showConfirmationPopup
+                        showConfirmationPopup,
+                        city
                     )
                     if (isTranslation) {
                         ChatBubble(
@@ -70,7 +72,8 @@ fun MessagesList(
                                 onLongPressChatBubble(selectedText)
                             },
                             showExplanation,
-                            showConfirmationPopup
+                            showConfirmationPopup,
+                            city
                         )
                     }
                 }

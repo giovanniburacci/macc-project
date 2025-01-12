@@ -85,7 +85,7 @@ data class AddChatBody(
 data class AddChatMessage(
     @SerializedName("message") val message: String,
     @SerializedName("translation") val translation: String,
-    @SerializedName("city") val city: String,
+    @SerializedName("city") val city: String?,
     @SerializedName("chat_id") val chat_id: Long,
 )
 

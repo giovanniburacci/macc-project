@@ -25,6 +25,7 @@ import androidx.navigation.NavController
 import com.example.macc_app.screens.history.shortenText
 import com.google.firebase.auth.FirebaseAuth
 import com.example.macc_app.R
+import com.example.macc_app.screens.history.formatDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +78,7 @@ fun Community(navController: NavController, viewModel: ChatViewModel) {
                         ) {
                             Text(text = chat.name, style = MaterialTheme.typography.titleLarge)
                             Text(
-                                text = chat.creation_time,
+                                text = formatDate(chat.creation_time),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Spacer(modifier = Modifier.height(8.dp))

@@ -60,14 +60,6 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
     var showRecognizedTextDialog by remember { mutableStateOf<Boolean>(false) }
     var recognizedText by remember { mutableStateOf<String>("") }
 
-    val cameraPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            Toast.makeText(context, "Camera permission is required.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
     var previewView by remember { mutableStateOf<PreviewView?>(null) }
@@ -154,10 +146,6 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
 
         }
     }
-    // Request camera permission on initial composition
-    LaunchedEffect(Unit) {
-        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-    }
 
     Column(
         modifier = Modifier
@@ -168,7 +156,7 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
             RecognizedTextDialog(
                 onDismiss = {showRecognizedTextDialog = false; recognizedText = ""},
                 onConfirm = {
-                    viewModel.sendMessage(recognizedText, type = MessageType.TEXT, targetLanguage = "it", timestamp = System.currentTimeMillis(), context = context)
+                    viewModel.sendMessage(recognizedText, type = MessageType.TEXT, targetLanguage = "it", context = context)
                     showRecognizedTextDialog = false
                     recognizedText = ""
                     navController.navigate("latestChat")

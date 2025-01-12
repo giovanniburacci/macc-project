@@ -73,6 +73,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
 
     private var textToSpeech: TextToSpeech? = null
     private var recognizer: SpeechRecognizer? = null
+    private var locationProviderClient: FusedLocationProviderClient? = null
 
     fun initializeSpeechComponents(context: Context) {
         textToSpeech = TextToSpeech(context) { status ->
@@ -81,6 +82,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
             }
         }
         recognizer = SpeechRecognizer.createSpeechRecognizer(context)
+        locationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     }
 
     fun mapMessageResponseListToMessageList(messageResponses: List<MessageResponse>): List<Message> {
@@ -258,25 +260,49 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         }
     }
 
-    fun sendMessage(content: String, type: MessageType, targetLanguage: String, timestamp: Long, context: Context) {
+    fun sendMessage(content: String, type: MessageType, targetLanguage: String, context: Context) {
         val message = Message(originalContent = content)
         messages.add(message)
         viewModelScope.launch {
-            if (type == MessageType.TEXT) {
-                obtainPosition(context, { cityName -> processTextMessage(message, targetLanguage, cityName)})
-            } else if (type == MessageType.AUDIO) {
-                obtainPosition(context, {cityName ->  transcribeAudio(message, targetLanguage, cityName)})
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                if (type == MessageType.TEXT) {
+                    processTextMessage(message, targetLanguage, "Unkown", context)
+                } else if (type == MessageType.AUDIO) {
+                    transcribeAudio(context, message, targetLanguage, "Unknown")
+                }
+            } else {
+                // Permission already granted, fetch location
+                if (type == MessageType.TEXT) {
+                    fetchLocation(
+                        context,
+                        locationProviderClient!!,
+                        { cityName -> processTextMessage(message, targetLanguage, cityName, context) })
+                } else if (type == MessageType.AUDIO) {
+                    fetchLocation(
+                        context,
+                        locationProviderClient!!,
+                        { cityName -> transcribeAudio(context, message, targetLanguage, cityName) })
+                }
             }
         }
     }
 
-    private fun processTextMessage(message: Message, targetLanguage: String, cityName: String) {
+    private fun processTextMessage(message: Message, targetLanguage: String, cityName: String, context: Context) {
         viewModelScope.launch {
             try {
                 val languageCode = identifyLanguage(message.originalContent)
                 if (languageCode != "und") {
                     translateText(message, languageCode, targetLanguage, cityName)
                 } else {
+                    message.translatedContent.value = message.originalContent
+                    message.city.value = cityName
+                    val body = AddChatMessage(message = message.originalContent, translation = message.originalContent, city = cityName, chat_id = lastChat.value!!.id)
+                    addMessage(body)
+                    Toast.makeText(context, "Language not identified, please try again", Toast.LENGTH_LONG).show()
                     Log.e("ChatViewModel", "Language not identified")
                 }
             } catch (e: Exception) {
@@ -312,6 +338,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 val translatedText = translator.translate(message.originalContent).await()
                 withContext(Dispatchers.Main) {
                     message.translatedContent.value = translatedText
+                    message.city.value = cityName
                     val body = AddChatMessage(message = message.originalContent, translation = translatedText, city = cityName, chat_id = lastChat.value!!.id)
                     addMessage(body)
                     Log.d("ChatViewModel", "Translated text: $translatedText")
@@ -322,13 +349,13 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         }
     }
 
-    private fun transcribeAudio(message: Message, targetLanguage: String, cityName: String) {
+    private fun transcribeAudio(context: Context, message: Message, targetLanguage: String, cityName: String) {
         viewModelScope.launch {
             try {
-                val text = recognizeSpeech()
+                val text = recognizeSpeech(context)
                 if (text.isNotEmpty()) {
                     message.translatedContent.value = text
-                    processTextMessage(message, targetLanguage, cityName)
+                    processTextMessage(message, targetLanguage, cityName, context)
                 } else {
                     Log.e("SpeechRecognition", "No recognizable speech")
                 }
@@ -338,7 +365,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         }
     }
 
-    private suspend fun recognizeSpeech(): String = withContext(Dispatchers.Main) {
+    private suspend fun recognizeSpeech(context: Context): String = withContext(Dispatchers.Main) {
         suspendCancellableCoroutine { continuation ->
             var isContinuationResumed = false // Flag to ensure single resumption
 
@@ -363,7 +390,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                     if (!isContinuationResumed) {
                         isContinuationResumed = true
                         Log.e("SpeechRecognition", "Error occurred: $error")
-                        continuation.resumeWithException(RuntimeException("Speech recognition error: $error"))
+                        continuation.resumeWithException(RuntimeException("$error"))
                     } else {
                         Log.w("SpeechRecognition", "onError called after continuation already resumed.")
                     }
@@ -399,10 +426,10 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         }
     }
 
-    fun startSpeechRecognition(onError: (String) -> Unit) {
+    fun startSpeechRecognition(context: Context, onError: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.Main) {
             try {
-                val text = recognizeSpeech()
+                val text = recognizeSpeech(context)
                 if (text.isNotEmpty()) {
                     showConfirmationPopup.value = true
                     lastMessage.value = Message(originalContent = text)
@@ -424,45 +451,23 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     }
 }
 
-fun obtainPosition(context: Context, callback: (cityName: String) -> Unit) {
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-
-    if (ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        ActivityCompat.requestPermissions(
-            context as Activity, // Replace `this` with your Activity reference
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            1001
-        )
-    } else {
-        // Permission already granted, fetch location
-        fetchLocation(context, fusedLocationClient, callback)
-    }
-}
-
 private fun fetchLocation(context: Context, fusedLocationClient: FusedLocationProviderClient, callback: (cityName: String) -> Unit) {
     try {
         fusedLocationClient.lastLocation.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val location = task.result
                 if (location != null) {
-
                     Log.d("ChatViewModel", "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
-                    Toast.makeText(context, "Lat: ${location.latitude}, Lng: ${location.longitude}", Toast.LENGTH_LONG).show()
                     val cityName = getCityName(location.latitude, location.longitude, context)
                     if(!cityName.isNullOrEmpty()) {
                         callback(cityName)
                     }
                     Log.d("ChatViewModel", "City: $cityName")
-                    Toast.makeText(context, "City: $cityName", Toast.LENGTH_LONG).show()
                 } else {
+                    callback("Unknown")
                     Toast.makeText(context, "Location is null. Try again later.", Toast.LENGTH_LONG).show()
                 }
             } else {
-                Log.d("Screen2", "No Location")
                 Toast.makeText(context, "Unable to fetch location", Toast.LENGTH_LONG).show()
             }
         }

@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 
 
 @Composable
-fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boolean, onLongPress: (String) -> Unit, showExplanation: Boolean, showConfirmationPopup: Boolean) {
+fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boolean, onLongPress: (String) -> Unit, showExplanation: Boolean, showConfirmationPopup: Boolean, city: String) {
     var bubbleColor = if (translation) Color(0xFFD1E8E2) else Color(0xFFACE0F9)
     bubbleColor = if(!showExplanation && !showConfirmationPopup) bubbleColor else bubbleColor.copy(alpha = 0.6f)
     val cornerRadius = RoundedCornerShape(12.dp)
@@ -68,7 +68,7 @@ fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boo
 
                     // City Text
                     Text(
-                        text = message.city.value,
+                        text = city,
                         fontSize = 8.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         style = MaterialTheme.typography.bodySmall

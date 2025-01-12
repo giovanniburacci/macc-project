@@ -90,32 +90,6 @@ fun LatestChat(viewModel: ChatViewModel) {
         viewModel.initializeSpeechComponents(context)
     }
 
-    // Request permissions
-    val micPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            Toast.makeText(context, "Microphone permission is required.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    // Request permissions
-    val internetPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            Toast.makeText(context, "Internet permission is required.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-    }
-
-    LaunchedEffect(Unit) {
-        internetPermissionLauncher.launch(Manifest.permission.INTERNET)
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -220,7 +194,6 @@ fun LatestChat(viewModel: ChatViewModel) {
                         lastMessage.value!!.originalContent,
                         type = MessageType.TEXT,
                         targetLanguage = "it",
-                        timestamp = System.currentTimeMillis(),
                         context = context
                     )
                     showConfirmationPopup.value = false
@@ -289,14 +262,16 @@ fun LatestChat(viewModel: ChatViewModel) {
                             text,
                             type = MessageType.TEXT,
                             targetLanguage = "it",
-                            timestamp = timestamp,
                             context = context
                         )
                     },
                     onSpeechStart = {
                         viewModel.startSpeechRecognition(
+                            context,
                             onError = { error ->
-                                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                                if(error == "7") {
+                                    Toast.makeText(context, "No text was recognized, please try again", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         )
                     },
