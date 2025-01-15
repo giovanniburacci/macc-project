@@ -104,6 +104,7 @@ class MainActivity : ComponentActivity() {
                 val context = LocalContext.current
                 viewModel.initializeSpeechComponents(context = context)
                 val auth = FirebaseAuth.getInstance()
+                Log.d("MainActivity", "User logged with uid ${auth.currentUser!!.uid}")
                 viewModel.fetchLastChat(auth.currentUser!!.uid)
                 AppContent(navController, viewModel)
             }
