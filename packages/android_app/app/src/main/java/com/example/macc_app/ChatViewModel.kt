@@ -39,6 +39,7 @@ import com.example.macc_app.data.remote.AddCommentBody
 import com.example.macc_app.data.remote.AddUserBody
 import com.example.macc_app.data.remote.ChangeNameBody
 import com.example.macc_app.data.remote.ChatResponse
+import com.example.macc_app.data.remote.ChatResponseWithUsername
 import com.example.macc_app.data.remote.Comment
 import com.example.macc_app.data.remote.MessageResponse
 import retrofit2.Retrofit
@@ -63,7 +64,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
 
     val comments = mutableStateListOf<Comment>()
 
-    val community = mutableStateListOf<ChatResponse>()
+    val community = mutableStateListOf<ChatResponseWithUsername>()
 
     val showConfirmationPopup = mutableStateOf(false)
     val lastMessage = mutableStateOf<Message?>(null)

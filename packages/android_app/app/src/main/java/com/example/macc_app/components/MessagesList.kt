@@ -95,7 +95,7 @@ fun MessagesList(
                     )
                 }
                 itemsIndexed(comments) { index, comment ->
-                    CommentBubble("Gigi finizio", comment.message)
+                    CommentBubble(comment.username, comment.message)
                 }
             }
         }

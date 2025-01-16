@@ -25,13 +25,13 @@ import androidx.navigation.NavController
 import com.example.macc_app.screens.history.shortenText
 import com.google.firebase.auth.FirebaseAuth
 import com.example.macc_app.R
+import com.example.macc_app.data.remote.ChatResponse
 import com.example.macc_app.screens.history.formatDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Community(navController: NavController, viewModel: ChatViewModel) {
 
-    val auth = FirebaseAuth.getInstance()
     viewModel.fetchCommunity()
 
     val community = viewModel.community
@@ -51,7 +51,7 @@ fun Community(navController: NavController, viewModel: ChatViewModel) {
                         .padding(8.dp)
                         .fillMaxWidth()
                         .clickable {
-                            viewModel.setChat(chat)
+                            viewModel.setChat(ChatResponse(id = chat.id, name = chat.name, is_public = chat.is_public, creation_time = chat.creation_time, preview = chat.preview, last_update = chat.last_update, user_id = chat.user_id))
                             viewModel.fetchMessages(chat.id)
                             viewModel.fetchComments(chat.id)
                             navController.navigate("community/${chat.id}") // Pass the cardId
@@ -69,7 +69,7 @@ fun Community(navController: NavController, viewModel: ChatViewModel) {
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = "Gigi Finizio",
+                                text = if(!chat.username.isNullOrEmpty()) chat.username else "",
                                 style = MaterialTheme.typography.titleMedium,
                             )
                         }

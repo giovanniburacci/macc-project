@@ -37,7 +37,7 @@ interface PythonAnywhereFactorAPI {
     suspend fun fetchHistory(@Path("uid") uid: String): List<ChatResponse>
 
     @GET("/chat/community")
-    suspend fun fetchCommunity(): List<ChatResponse>
+    suspend fun fetchCommunity(): List<ChatResponseWithUsername>
 
     @PUT("/chat/{chatId}")
     suspend fun updateIsChatPublic(@Path("chatId") chatId: Long): ChatResponse
@@ -76,6 +76,16 @@ data class ChatResponse(
     @SerializedName("preview") val preview: String?,
 )
 
+data class ChatResponseWithUsername(
+    @SerializedName("creation_time") val creation_time: String,
+    @SerializedName("id") val id: Long,
+    @SerializedName("is_public") val is_public: Boolean,
+    @SerializedName("last_update") val last_update: String,
+    @SerializedName("name") var name: String,
+    @SerializedName("user_id") val user_id: String,
+    @SerializedName("preview") val preview: String?,
+    @SerializedName("username") val username: String?,
+)
 data class AddChatBody(
     @SerializedName("name") val name: String,
     @SerializedName("is_public") val is_public: Boolean,
@@ -115,6 +125,7 @@ data class Comment(
     @SerializedName("chat_id") val chat_id: Long,
     @SerializedName("creation_time") val creation_time: String,
     @SerializedName("last_update") val last_update: String,
+    @SerializedName("username") val username: String,
     @SerializedName("message") val message: String,
     @SerializedName("user_id") val user_id: String,
 )
