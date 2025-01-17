@@ -25,10 +25,9 @@ import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import android.Manifest
-import android.app.Activity
 import android.location.Geocoder
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
+import androidx.appcompat.app.AppCompatActivity.MODE_PRIVATE
 import com.example.macc_app.data.remote.PythonAnywhereFactorAPI
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -71,11 +70,13 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
 
     val lastChat = mutableStateOf<ChatResponse?>(null)
 
-    val targetLanguage = mutableStateOf("it")
-
     private var textToSpeech: TextToSpeech? = null
     private var recognizer: SpeechRecognizer? = null
     private var locationProviderClient: FusedLocationProviderClient? = null
+
+    companion object {
+        const val DEFAULT_TARGET_LANGUAGE = "it"
+    }
 
     fun initializeSpeechComponents(context: Context) {
         textToSpeech = TextToSpeech(context) { status ->
@@ -265,6 +266,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun sendMessage(content: String, type: MessageType, context: Context) {
         val message = Message(originalContent = content)
         messages.add(message)
+        val targetLanguage = getTargetLanguage(context)
         viewModelScope.launch {
             if (ContextCompat.checkSelfPermission(
                     context,
@@ -272,9 +274,9 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 if (type == MessageType.TEXT) {
-                    processTextMessage(message, targetLanguage.value, "Unkown", context)
+                    processTextMessage(message, targetLanguage, "Unkown", context)
                 } else if (type == MessageType.AUDIO) {
-                    transcribeAudio(context, message, targetLanguage.value, "Unknown")
+                    transcribeAudio(context, message, targetLanguage, "Unknown")
                 }
             } else {
                 // Permission already granted, fetch location
@@ -282,15 +284,20 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                     fetchLocation(
                         context,
                         locationProviderClient!!,
-                        { cityName -> processTextMessage(message, targetLanguage.value, cityName, context) })
+                        { cityName -> processTextMessage(message, targetLanguage, cityName, context) })
                 } else if (type == MessageType.AUDIO) {
                     fetchLocation(
                         context,
                         locationProviderClient!!,
-                        { cityName -> transcribeAudio(context, message, targetLanguage.value, cityName) })
+                        { cityName -> transcribeAudio(context, message, targetLanguage, cityName) })
                 }
             }
         }
+    }
+
+    private fun getTargetLanguage(context: Context): String {
+        val sharedPreferences = context.getSharedPreferences("MyPrefs", MODE_PRIVATE)
+        return sharedPreferences.getString("targetLanguage", DEFAULT_TARGET_LANGUAGE) ?: DEFAULT_TARGET_LANGUAGE
     }
 
     private fun processTextMessage(message: Message, targetLanguage: String, cityName: String, context: Context) {
