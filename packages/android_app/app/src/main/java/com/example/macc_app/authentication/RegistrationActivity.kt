@@ -18,10 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.macc_app.MainActivity
 import com.example.macc_app.R
 import com.example.macc_app.data.remote.AddUserBody
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.database
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -36,10 +33,9 @@ class RegistrationActivity : AppCompatActivity() {
     private lateinit var languageSpinner: Spinner
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseDatabase
 
-    val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl("https://ghinoads.pythonanywhere.com")
+    private val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl(PYTHON_ANYWHERE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -53,7 +49,7 @@ class RegistrationActivity : AppCompatActivity() {
         private const val REGISTRATION_SUCCESSFUL_MESSAGE = "Registration successful!"
         private const val REGISTRATION_FAILED_MESSAGE = "Registration failed!"
 
-        private const val DB_URL = "https://macc-project-bf2f7-default-rtdb.europe-west1.firebasedatabase.app/"
+        private const val PYTHON_ANYWHERE_URL = "https://ghinoads.pythonanywhere.com"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -211,9 +207,6 @@ class RegistrationActivity : AppCompatActivity() {
                 progressBar.visibility = View.GONE
 
                 // Save user data in db
-                db = Firebase.database(DB_URL)
-
-                val user = User(username, email)
                 val uid = auth.currentUser!!.uid
                 val body = AddUserBody(uid = uid, username = username, email = email)
                 viewModel.createUser(body)
@@ -225,20 +218,10 @@ class RegistrationActivity : AppCompatActivity() {
                 editor.putString("targetLanguage", languageCode)
                 editor.apply()
 
-                db.getReference("users/$uid").setValue(user)
-                    .addOnSuccessListener {
-                        // If sign-up is successful and user data is saved in db, intent to home activity
-                        val intent = Intent(this, MainActivity::class.java)
-                        startActivity(intent)
-                    }
-                    .addOnFailureListener {
-                        // If save fails
-                        Toast.makeText(applicationContext, REGISTRATION_FAILED_MESSAGE,
-                            Toast.LENGTH_LONG).show()
 
-                        // Hide the progress bar
-                        progressBar.visibility = View.GONE
-                    }
+                // Intent to home activity
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
             }
             .addOnFailureListener {
                 // If sign-up fails
