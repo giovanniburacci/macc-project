@@ -100,9 +100,9 @@ class SensorView(
         super.onDraw(canvas)
 
         camera.save()
+        if (yawEnabled) camera.rotateZ(yaw) //Apply yaw rotation
         if (pitchEnabled) camera.rotateX(pitch) //Apply pitch rotation
         if (rollEnabled) camera.rotateY(roll) //Apply roll rotation
-        if (yawEnabled) camera.rotateZ(yaw) //Apply yaw rotation
         camera.getMatrix(M2) //Get the transformation matrix
         camera.restore()
 
