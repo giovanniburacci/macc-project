@@ -3,6 +3,7 @@ package com.example.macc_app
 import ChatViewModel
 import ChatViewModelFactory
 import android.Manifest
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -97,6 +98,10 @@ class MainActivity : ComponentActivity() {
 
         // Check and request permissions
         checkAndRequestPermissions()
+
+        val sharedPreferences: SharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+        val targetLanguage = sharedPreferences.getString("targetLanguage", "it");
+        viewModel.targetLanguage.value = if(!targetLanguage.isNullOrEmpty()) targetLanguage else "it"
 
         setContent {
             AppTheme  {

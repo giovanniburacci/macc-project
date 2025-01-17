@@ -5,10 +5,13 @@ import ChatViewModelFactory
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +25,7 @@ import com.google.firebase.database.database
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+
 class RegistrationActivity : AppCompatActivity() {
     private lateinit var username: EditText
     private lateinit var email: EditText
@@ -29,6 +33,7 @@ class RegistrationActivity : AppCompatActivity() {
     private lateinit var confirmPassword: EditText
     private lateinit var registerButton: Button
     private lateinit var progressBar: ProgressBar
+    private lateinit var languageSpinner: Spinner
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseDatabase
@@ -54,7 +59,33 @@ class RegistrationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.registration_activity)
+        languageSpinner = findViewById<Spinner>(R.id.spinner2)
 
+
+        val adapter = ArrayAdapter.createFromResource(
+            this, R.array.languages, android.R.layout.simple_spinner_item
+        )
+
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+
+        languageSpinner.adapter = adapter
+        var index = -1
+        for (i in 0 until adapter.count) {
+            if (adapter.getItem(i) == "Italian") { // Check for "Italian"
+                index = i
+                break
+            }
+        }
+
+
+// Set the default selection
+        if (index != -1) {
+            languageSpinner.setSelection(index)
+        } else {
+            Log.e("Spinner", "Language 'Italian' not found in the adapter.")
+        }
         auth = FirebaseAuth.getInstance()
 
         username = findViewById(R.id.username)
@@ -68,6 +99,71 @@ class RegistrationActivity : AppCompatActivity() {
         registerButton.setOnClickListener { registerUserAccount() }
     }
 
+    private fun getLanguageCodeMap(): Map<String, String> {
+        return mapOf(
+            "Afrikaans" to "af",
+            "Arabic" to "ar",
+            "Belarusian" to "be",
+            "Bulgarian" to "bg",
+            "Bengali" to "bn",
+            "Catalan" to "ca",
+            "Czech" to "cs",
+            "Welsh" to "cy",
+            "Danish" to "da",
+            "German" to "de",
+            "Greek" to "el",
+            "English" to "en",
+            "Esperanto" to "eo",
+            "Spanish" to "es",
+            "Estonian" to "et",
+            "Persian" to "fa",
+            "Finnish" to "fi",
+            "French" to "fr",
+            "Irish" to "ga",
+            "Galician" to "gl",
+            "Gujarati" to "gu",
+            "Hebrew" to "he",
+            "Hindi" to "hi",
+            "Croatian" to "hr",
+            "Haitian" to "ht",
+            "Hungarian" to "hu",
+            "Indonesian" to "id",
+            "Icelandic" to "is",
+            "Italian" to "it",
+            "Japanese" to "ja",
+            "Georgian" to "ka",
+            "Kannada" to "kn",
+            "Korean" to "ko",
+            "Lithuanian" to "lt",
+            "Latvian" to "lv",
+            "Macedonian" to "mk",
+            "Marathi" to "mr",
+            "Malay" to "ms",
+            "Maltese" to "mt",
+            "Dutch" to "nl",
+            "Norwegian" to "no",
+            "Polish" to "pl",
+            "Portuguese" to "pt",
+            "Romanian" to "ro",
+            "Russian" to "ru",
+            "Slovak" to "sk",
+            "Slovenian" to "sl",
+            "Albanian" to "sq",
+            "Swedish" to "sv",
+            "Swahili" to "sw",
+            "Tamil" to "ta",
+            "Telugu" to "te",
+            "Thai" to "th",
+            "Tagalog" to "tl",
+            "Turkish" to "tr",
+            "Ukrainian" to "uk",
+            "Urdu" to "ur",
+            "Vietnamese" to "vi",
+            "Chinese" to "zh"
+        )
+    }
+
+
     private fun registerUserAccount() {
         // Turn progress bar visible for showing the loading progress
         progressBar.visibility = View.VISIBLE
@@ -77,6 +173,7 @@ class RegistrationActivity : AppCompatActivity() {
         val email = email.getText().toString()
         val password = password.getText().toString()
         val confirmPassword = confirmPassword.getText().toString()
+        val language = languageSpinner.selectedItem.toString()
 
         // Input validation
         if (TextUtils.isEmpty(username)) {
@@ -120,6 +217,14 @@ class RegistrationActivity : AppCompatActivity() {
                 val uid = auth.currentUser!!.uid
                 val body = AddUserBody(uid = uid, username = username, email = email)
                 viewModel.createUser(body)
+                val languageMap = getLanguageCodeMap()
+
+                val languageCode = languageMap[language]
+                val sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+                val editor = sharedPreferences.edit()
+                editor.putString("targetLanguage", languageCode)
+                editor.apply()
+
                 db.getReference("users/$uid").setValue(user)
                     .addOnSuccessListener {
                         // If sign-up is successful and user data is saved in db, intent to home activity

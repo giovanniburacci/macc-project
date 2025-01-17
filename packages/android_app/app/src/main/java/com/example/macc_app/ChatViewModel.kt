@@ -71,6 +71,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
 
     val lastChat = mutableStateOf<ChatResponse?>(null)
 
+    val targetLanguage = mutableStateOf("it")
 
     private var textToSpeech: TextToSpeech? = null
     private var recognizer: SpeechRecognizer? = null
@@ -261,7 +262,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         }
     }
 
-    fun sendMessage(content: String, type: MessageType, targetLanguage: String, context: Context) {
+    fun sendMessage(content: String, type: MessageType, context: Context) {
         val message = Message(originalContent = content)
         messages.add(message)
         viewModelScope.launch {
@@ -271,9 +272,9 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 if (type == MessageType.TEXT) {
-                    processTextMessage(message, targetLanguage, "Unkown", context)
+                    processTextMessage(message, targetLanguage.value, "Unkown", context)
                 } else if (type == MessageType.AUDIO) {
-                    transcribeAudio(context, message, targetLanguage, "Unknown")
+                    transcribeAudio(context, message, targetLanguage.value, "Unknown")
                 }
             } else {
                 // Permission already granted, fetch location
@@ -281,12 +282,12 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                     fetchLocation(
                         context,
                         locationProviderClient!!,
-                        { cityName -> processTextMessage(message, targetLanguage, cityName, context) })
+                        { cityName -> processTextMessage(message, targetLanguage.value, cityName, context) })
                 } else if (type == MessageType.AUDIO) {
                     fetchLocation(
                         context,
                         locationProviderClient!!,
-                        { cityName -> transcribeAudio(context, message, targetLanguage, cityName) })
+                        { cityName -> transcribeAudio(context, message, targetLanguage.value, cityName) })
                 }
             }
         }

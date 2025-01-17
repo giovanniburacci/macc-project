@@ -156,7 +156,7 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
             RecognizedTextDialog(
                 onDismiss = {showRecognizedTextDialog = false; recognizedText = ""},
                 onConfirm = {
-                    viewModel.sendMessage(recognizedText, type = MessageType.TEXT, targetLanguage = "it", context = context)
+                    viewModel.sendMessage(recognizedText, type = MessageType.TEXT, context = context)
                     showRecognizedTextDialog = false
                     recognizedText = ""
                     navController.navigate("latestChat")

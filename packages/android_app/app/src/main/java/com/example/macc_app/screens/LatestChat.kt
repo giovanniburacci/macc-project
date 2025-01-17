@@ -3,11 +3,10 @@ package com.example.macc_app.screens
 import ChangeNameModal
 import ChatViewModel
 import MessageType
-import android.Manifest
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,11 +16,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,6 +52,7 @@ import com.example.macc_app.components.MessagesList
 import com.example.macc_app.components.RecognizedTextDialog
 import com.example.macc_app.data.remote.AddChatBody
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LatestChat(viewModel: ChatViewModel) {
@@ -60,8 +62,8 @@ fun LatestChat(viewModel: ChatViewModel) {
 
     val showConfirmationPopup = viewModel.showConfirmationPopup
     val lastMessage = viewModel.lastMessage
-    val isPublic = viewModel.lastChat.value!!.is_public
-    val chatId = viewModel.lastChat.value!!.id
+    val isPublic = viewModel.lastChat.value?.is_public
+    val chatId = viewModel.lastChat.value?.id
 
     var showPopup by remember { mutableStateOf(false) }
     var chatBubbleText by remember { mutableStateOf("") }
@@ -90,200 +92,215 @@ fun LatestChat(viewModel: ChatViewModel) {
         viewModel.initializeSpeechComponents(context)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(
-                            onClick = {
-                                val body = AddChatBody(
-                                    name = "New Chat",
-                                    is_public = false,
-                                    user_id = viewModel.lastChat.value!!.user_id
-                                )
-                                viewModel.createChat(body, true)
-                            },
-                            modifier = Modifier.size(20.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = "Add new chat",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        Text(viewModel.lastChat.value!!.name)
-                        IconButton(
-                            onClick = { showModal = true }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Edit,
-                                contentDescription = "Edit chat name",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    Row(
-                        modifier = Modifier.align(Alignment.CenterVertically),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Switch(
-                            thumbContent = {
-                                Icon(
-                                    painter = painterResource(if (!isPublic) R.drawable.outline_lock_24 else R.drawable.baseline_lock_open_24),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize),
-                                )
-                            },
-                            checked = isPublic,
-                            onCheckedChange = {
-                                viewModel.updateIsChatPublic(viewModel.lastChat.value!!.id)
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = { showExplanation = true }) {
-                            Text(
-                                "How to use 2D",
-                                fontWeight = MaterialTheme.typography.titleMedium.fontWeight
-                            )
-                        }
-                    }
-
-                }
-            )
-        }
-    ) { paddingValues ->
-
-        if (showExplanation) {
-            ExplanationBox(
-                onDismiss = { showExplanation = false },
-                pitchEnabled = pitchEnabled,
-                onPitchToggle = onPitchToggle,
-                rollEnabled = rollEnabled,
-                onRollToggle = onRollToggle,
-                yawEnabled = yawEnabled,
-                onYawToggle = onYawToggle
-            )
-        }
-
-        if (showModal) {
-            ChangeNameModal(
-                currentName = viewModel.lastChat.value!!.name,
-                onDismiss = { showModal = false },
-                onSave = { newName ->
-                    Log.d(
-                        "ChatHistory",
-                        "Saving new name: $newName for chat ${viewModel.lastChat.value!!.id}"
-                    )
-                    viewModel.updateChatName(chatId, newName)
-                    showModal = false
-                }
-            )
-        }
-
-        if (showConfirmationPopup.value) {
-            RecognizedTextDialog(
-                onDismiss = { showConfirmationPopup.value = false; lastMessage.value = null },
-                onConfirm = {
-                    viewModel.sendMessage(
-                        lastMessage.value!!.originalContent,
-                        type = MessageType.TEXT,
-                        targetLanguage = "it",
-                        context = context
-                    )
-                    showConfirmationPopup.value = false
-                    lastMessage.value = null
-
-                },
-                showDialog = showConfirmationPopup.value,
-                text = if (lastMessage.value != null) lastMessage.value!!.originalContent else ""
-            )
-        }
-
+    if(viewModel.lastChat.value == null) {
+        // Show loader while content is loading
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues) // Apply padding from Scaffold
+                .wrapContentSize(Alignment.Center)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 80.dp)
-            ) {
-                MessagesList(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    messages,
-                    onLongPressChatBubble = { selectedText ->
-                        showPopup = true
-                        chatBubbleText = selectedText
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
+        }
+    } else {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    val body = AddChatBody(
+                                        name = "New Chat",
+                                        is_public = false,
+                                        user_id = viewModel.lastChat.value!!.user_id
+                                    )
+                                    viewModel.createChat(body, true)
+                                },
+                                modifier = Modifier.size(20.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = "Add new chat",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Text(viewModel.lastChat.value!!.name)
+                            IconButton(
+                                onClick = { showModal = true }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Edit,
+                                    contentDescription = "Edit chat name",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    },
+                    actions = {
+                        Row(
+                            modifier = Modifier.align(Alignment.CenterVertically),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Switch(
+                                thumbContent = {
+                                    Icon(
+                                        painter = painterResource(if (isPublic !== null && !isPublic) R.drawable.outline_lock_24 else R.drawable.baseline_lock_open_24),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                                    )
+                                },
+                                checked = if (isPublic !== null) isPublic else false,
+                                onCheckedChange = {
+                                    viewModel.updateIsChatPublic(viewModel.lastChat.value!!.id)
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(onClick = { showExplanation = true }) {
+                                Text(
+                                    "How to use 2D",
+                                    fontWeight = MaterialTheme.typography.titleMedium.fontWeight
+                                )
+                            }
+                        }
+
+                    }
+                )
+            }
+        ) { paddingValues ->
+
+            if (showExplanation) {
+                ExplanationBox(
+                    onDismiss = { showExplanation = false },
+                    pitchEnabled = pitchEnabled,
+                    onPitchToggle = onPitchToggle,
+                    rollEnabled = rollEnabled,
+                    onRollToggle = onRollToggle,
+                    yawEnabled = yawEnabled,
+                    onYawToggle = onYawToggle
+                )
+            }
+
+            if (showModal) {
+                ChangeNameModal(
+                    currentName = viewModel.lastChat.value!!.name,
+                    onDismiss = { showModal = false },
+                    onSave = { newName ->
+                        Log.d(
+                            "ChatHistory",
+                            "Saving new name: $newName for chat ${viewModel.lastChat.value!!.id}"
+                        )
+                        if (chatId !== null) {
+                            viewModel.updateChatName(chatId, newName)
+                        }
+                        showModal = false
+                    }
+                )
+            }
+
+            if (showConfirmationPopup.value) {
+                RecognizedTextDialog(
+                    onDismiss = { showConfirmationPopup.value = false; lastMessage.value = null },
+                    onConfirm = {
+                        viewModel.sendMessage(
+                            lastMessage.value!!.originalContent,
+                            type = MessageType.TEXT,
+                            context = context
+                        )
+                        showConfirmationPopup.value = false
+                        lastMessage.value = null
 
                     },
-                    showExplanation,
-                    showConfirmationPopup.value,
-                    comments = null
+                    showDialog = showConfirmationPopup.value,
+                    text = if (lastMessage.value != null) lastMessage.value!!.originalContent else ""
                 )
-                if (showPopup) {
-                    AlertDialog(
-                        onDismissRequest = { showPopup = false },
-                        title = { Text("2D text view") },
-                        text = {
-                            AndroidView(
-                                factory = { context ->
-                                    SensorView(
-                                        context,
-                                        chatBubbleText,
-                                        pitchEnabled,
-                                        rollEnabled,
-                                        yawEnabled
-                                    )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues) // Apply padding from Scaffold
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 80.dp)
+                ) {
+                    MessagesList(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        messages,
+                        onLongPressChatBubble = { selectedText ->
+                            showPopup = true
+                            chatBubbleText = selectedText
+
+                        },
+                        showExplanation,
+                        showConfirmationPopup.value,
+                        comments = null
+                    )
+                    if (showPopup) {
+                        AlertDialog(
+                            onDismissRequest = { showPopup = false },
+                            title = { Text("2D text view") },
+                            text = {
+                                AndroidView(
+                                    factory = { context ->
+                                        SensorView(
+                                            context,
+                                            chatBubbleText,
+                                            pitchEnabled,
+                                            rollEnabled,
+                                            yawEnabled
+                                        )
+                                    }
+                                )
+                            },
+                            confirmButton = {
+                                Button(onClick = { showPopup = false }) {
+                                    Text("OK")
+                                }
+                            }
+                        )
+                    }
+
+                    // Input Section
+                    MessageInput(
+                        onTextSend = { text, timestamp ->
+                            viewModel.sendMessage(
+                                text,
+                                type = MessageType.TEXT,
+                                context = context
+                            )
+                        },
+                        onSpeechStart = {
+                            viewModel.startSpeechRecognition(
+                                context,
+                                onError = { error ->
+                                    if (error == "7") {
+                                        Toast.makeText(
+                                            context,
+                                            "No text was recognized, please try again",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 }
                             )
                         },
-                        confirmButton = {
-                            Button(onClick = { showPopup = false }) {
-                                Text("OK")
-                            }
-                        }
+                        onSpeechStop = {
+                            viewModel.stopSpeechRecognition()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        showExplanation,
+                        showConfirmationPopup.value
                     )
                 }
-
-                // Input Section
-                MessageInput(
-                    onTextSend = { text, timestamp ->
-                        viewModel.sendMessage(
-                            text,
-                            type = MessageType.TEXT,
-                            targetLanguage = "it",
-                            context = context
-                        )
-                    },
-                    onSpeechStart = {
-                        viewModel.startSpeechRecognition(
-                            context,
-                            onError = { error ->
-                                if(error == "7") {
-                                    Toast.makeText(context, "No text was recognized, please try again", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        )
-                    },
-                    onSpeechStop = {
-                        viewModel.stopSpeechRecognition()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    showExplanation,
-                    showConfirmationPopup.value
-                )
             }
         }
     }

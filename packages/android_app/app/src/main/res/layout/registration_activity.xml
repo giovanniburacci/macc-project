@@ -52,6 +52,11 @@
         android:inputType="textPassword" />
 
     <!-- Button for Login with text "Register" -->
+    <Spinner
+        android:id="@+id/spinner2"
+        android:layout_width="320dp"
+        android:layout_height="58dp" />
+
     <Button
         android:id="@+id/register"
         android:layout_width="320dp"
