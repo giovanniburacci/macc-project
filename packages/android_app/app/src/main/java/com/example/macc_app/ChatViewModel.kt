@@ -274,7 +274,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 if (type == MessageType.TEXT) {
-                    processTextMessage(message, targetLanguage, "Unkown", context)
+                    processTextMessage(message, targetLanguage, "Unknown", context)
                 } else if (type == MessageType.AUDIO) {
                     transcribeAudio(context, message, targetLanguage, "Unknown")
                 }

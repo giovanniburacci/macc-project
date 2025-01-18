@@ -58,21 +58,23 @@ fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boo
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.align(Alignment.Start) // Align to the start of the column
                 ) {
-                    // Small Icon
-                    Icon(
-                        imageVector = Icons.Filled.LocationOn,
-                        contentDescription = "Location Icon",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(12.dp)
-                    )
-
                     // City Text
-                    Text(
-                        text = city,
-                        fontSize = 8.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    if (city != "Unknown") {
+                        // Small Icon for location
+                        Icon(
+                            imageVector = Icons.Filled.LocationOn,
+                            contentDescription = "Location Icon",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(12.dp)
+                        )
+
+                        Text(
+                            text = city,
+                            fontSize = 8.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
         }
