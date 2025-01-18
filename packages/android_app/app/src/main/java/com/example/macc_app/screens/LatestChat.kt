@@ -64,6 +64,7 @@ fun LatestChat(viewModel: ChatViewModel) {
     val lastMessage = viewModel.lastMessage
     val isPublic = viewModel.lastChat.value?.is_public
     val chatId = viewModel.lastChat.value?.id
+    val isDownloadingModel = viewModel.isDownloadingModel.value
 
     var showPopup by remember { mutableStateOf(false) }
     var chatBubbleText by remember { mutableStateOf("") }
@@ -223,6 +224,15 @@ fun LatestChat(viewModel: ChatViewModel) {
                     .fillMaxSize()
                     .padding(paddingValues) // Apply padding from Scaffold
             ) {
+                if(isDownloadingModel) {
+                    Column(modifier = Modifier.align(Alignment.Center)) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                        Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp), text = "Downloading model...")
+
+                    }
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

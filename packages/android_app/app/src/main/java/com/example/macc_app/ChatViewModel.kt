@@ -72,6 +72,8 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
 
     val readOnlyChat = mutableStateOf<ChatResponse?>(null)
 
+    val isDownloadingModel = mutableStateOf<Boolean>(false)
+
     private var textToSpeech: TextToSpeech? = null
     private var recognizer: SpeechRecognizer? = null
     private var locationProviderClient: FusedLocationProviderClient? = null
@@ -356,7 +358,9 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
             val translator = Translation.getClient(options)
 
             try {
+                isDownloadingModel.value = true
                 translator.downloadModelIfNeeded().await()
+                isDownloadingModel.value = false
                 val translatedText = translator.translate(message.originalContent).await()
                 withContext(Dispatchers.Main) {
                     message.translatedContent.value = translatedText
