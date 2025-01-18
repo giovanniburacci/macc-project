@@ -9,9 +9,16 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.macc_app.MainActivity
 import com.example.macc_app.R
+import com.example.macc_app.data.remote.PythonAnywhereFactorAPI
+import com.example.macc_app.data.remote.UserResponse
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var email: EditText
@@ -21,6 +28,13 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
 
     private lateinit var auth: FirebaseAuth
+
+    private val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl("https://ghinoads.pythonanywhere.com")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val myApiService: PythonAnywhereFactorAPI = retrofit.create(PythonAnywhereFactorAPI::class.java)
 
     companion object {
         private const val EMPTY_EMAIL_MESSAGE = "Please enter email!"
@@ -86,6 +100,8 @@ class LoginActivity : AppCompatActivity() {
                 // Hide the progress bar
                 progressBar.visibility = View.GONE
 
+                setTargetLanguageIfNotExists(it.user!!.uid)
+
                 // If sign-in is successful intent to home activity
                 val intent = Intent(this, MainActivity::class.java)
                 startActivity(intent)
@@ -98,5 +114,23 @@ class LoginActivity : AppCompatActivity() {
                 // Hide the progress bar
                 progressBar.visibility = View.GONE
             }
+    }
+
+    private fun setTargetLanguageIfNotExists(uid: String) {
+        val sharedPreferences = this.getSharedPreferences("MyPrefs", MODE_PRIVATE)
+        var targetLanguage = sharedPreferences.getString("targetLanguage", null)
+
+        if (targetLanguage == null) {
+            var user: UserResponse? = null
+
+            // Set target language if it doesn't exist, using coroutine
+            lifecycleScope.launch(Dispatchers.IO) {
+                user = myApiService.getUser(uid)
+            }
+            targetLanguage = user!!.target_language
+            val editor = sharedPreferences.edit()
+            editor.putString("targetLanguage", targetLanguage)
+            editor.apply()
+        }
     }
 }

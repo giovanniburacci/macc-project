@@ -12,6 +12,9 @@ interface PythonAnywhereFactorAPI {
     @GET("/user")
     suspend fun getUsers(): List<UserResponse>
 
+    @GET("/user/{uid}")
+    suspend fun getUser(@Path("uid") uid: String): UserResponse
+
     @GET("/chat/last-from-user/{uid}")
     suspend fun getLastChatFromUser(@Path("uid") uid: String): ChatResponse?
 
@@ -64,6 +67,7 @@ data class UserResponse(
     @SerializedName("last_update") val last_update: String,
     @SerializedName("uid") val uid: String,
     @SerializedName("username") val username: String,
+    @SerializedName("target_language") val target_language: String
 )
 
 data class ChatResponse(
