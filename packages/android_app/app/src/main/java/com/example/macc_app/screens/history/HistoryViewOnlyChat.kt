@@ -69,7 +69,7 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
     val showConfirmationPopup = viewModel.showConfirmationPopup
 
     val messages = viewModel.messages
-    val isPublic = viewModel.lastChat.value!!.is_public
+    val chat = viewModel.readOnlyChat.value
 
     Scaffold(
         topBar = {
@@ -78,7 +78,7 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(viewModel.lastChat.value!!.name)
+                        Text(viewModel.readOnlyChat.value!!.name)
                         IconButton(
                             onClick = { showModal = true }
                         ) {
@@ -98,15 +98,17 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
                     ) {
                         Switch(
                             thumbContent = {
-                                Icon(
-                                    painter = painterResource(if (!isPublic) R.drawable.outline_lock_24 else R.drawable.baseline_lock_open_24),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize),
-                                )
+                                if (chat != null) {
+                                    Icon(
+                                        painter = painterResource(if (!chat.is_public) R.drawable.outline_lock_24 else R.drawable.baseline_lock_open_24),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                                    )
+                                }
                             },
-                            checked = isPublic,
+                            checked = chat?.is_public ?: false,
                             onCheckedChange = {
-                                viewModel.updateIsChatPublic(viewModel.lastChat.value!!.id)
+                                viewModel.updateIsChatPublic(viewModel.readOnlyChat.value!!.id)
                             }
                         )
                         Spacer(modifier = Modifier.width(16.dp))
@@ -136,14 +138,14 @@ fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
 
         if (showModal) {
             ChangeNameModal(
-                currentName = viewModel.lastChat.value!!.name,
+                currentName = viewModel.readOnlyChat.value!!.name,
                 onDismiss = { showModal = false },
                 onSave = { newName ->
                     Log.d(
                         "ChatHistory",
-                        "Saving new name: $newName for chat ${viewModel.lastChat.value!!.id}"
+                        "Saving new name: $newName for chat ${viewModel.readOnlyChat.value!!.id}"
                     )
-                    viewModel.updateChatName(viewModel.lastChat.value!!.id, newName)
+                    viewModel.updateChatName(viewModel.readOnlyChat.value!!.id, newName)
                     showModal = false
                 }
             )

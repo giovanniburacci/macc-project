@@ -66,7 +66,7 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(viewModel.lastChat.value!!.name) },
+                title = { Text(viewModel.readOnlyChat.value!!.name) },
                 actions = {
                     Button(onClick = { showExplanation = true }) {
                         Text(
@@ -151,7 +151,7 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
                         val body = AddCommentBody(
                             commentText,
                             FirebaseAuth.getInstance().currentUser!!.uid,
-                            viewModel.lastChat.value!!.id
+                            viewModel.readOnlyChat.value!!.id
                         )
                         viewModel.addComment(body)
                     }

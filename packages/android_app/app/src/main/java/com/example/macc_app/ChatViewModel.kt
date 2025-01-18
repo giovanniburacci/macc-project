@@ -139,9 +139,16 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 val body = ChangeNameBody(chat_id = chatId, name = name)
                 val resp = myApiService.updateChatName(body)
                 Log.d("ChatViewModel", "Response from API: ${resp}")
-                val updatedChat = lastChat.value!!.copy()
-                updatedChat.name = name
-                lastChat.value = updatedChat
+                if(lastChat.value?.id == chatId) {
+                    val updatedChat = lastChat.value!!.copy()
+                    updatedChat.name = name
+                    lastChat.value = updatedChat
+                }
+                if(readOnlyChat.value?.id == chatId) {
+                    val updatedChat = readOnlyChat.value!!.copy()
+                    updatedChat.name = name
+                    readOnlyChat.value = updatedChat
+                }
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error changing name", e)
             }
@@ -198,7 +205,12 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
             try {
                 Log.d("ChatViewModel", "chatId: $chatId")
                 val response = myApiService.updateIsChatPublic(chatId)
-                lastChat.value = response
+                if(lastChat.value?.id == chatId) {
+                    lastChat.value = response
+                }
+                if(readOnlyChat.value?.id == chatId){
+                    readOnlyChat.value = response
+                }
                 Log.d("ChatViewModel", "Response from API updateIsChatPublic: $response")
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error updateIsChatPublic", e)
