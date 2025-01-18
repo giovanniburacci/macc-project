@@ -20,7 +20,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.macc_app.screens.history.shortenText
-import com.google.firebase.auth.FirebaseAuth
 import com.example.macc_app.R
 import com.example.macc_app.data.remote.ChatResponse
 import com.example.macc_app.screens.history.formatDate
@@ -58,16 +57,18 @@ fun Community(navController: NavController, viewModel: ChatViewModel) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).align(Alignment.CenterHorizontally)
                     ) {
-                        Column(modifier = Modifier.width(50.dp).align(Alignment.CenterVertically),
+                        Column(modifier = Modifier.width(80.dp).align(Alignment.CenterVertically),
                             verticalArrangement = Arrangement.Center) {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_person_24),
                                 contentDescription = "User",
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
                             Text(
                                 text = if(!chat.username.isNullOrEmpty()) chat.username else "",
                                 style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
                             )
                         }
                         Column(
