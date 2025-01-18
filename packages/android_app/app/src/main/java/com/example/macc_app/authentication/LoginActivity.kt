@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import com.example.macc_app.MainActivity
 import com.example.macc_app.R
 import com.example.macc_app.data.remote.PythonAnywhereFactorAPI
-import com.example.macc_app.data.remote.UserResponse
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -121,16 +120,15 @@ class LoginActivity : AppCompatActivity() {
         var targetLanguage = sharedPreferences.getString("targetLanguage", null)
 
         if (targetLanguage == null) {
-            var user: UserResponse? = null
 
             // Set target language if it doesn't exist, using coroutine
             lifecycleScope.launch(Dispatchers.IO) {
-                user = myApiService.getUser(uid)
+                val user = myApiService.getUser(uid)
+                targetLanguage = user.target_language
+                val editor = sharedPreferences.edit()
+                editor.putString("targetLanguage", targetLanguage)
+                editor.apply()
             }
-            targetLanguage = user!!.target_language
-            val editor = sharedPreferences.edit()
-            editor.putString("targetLanguage", targetLanguage)
-            editor.apply()
         }
     }
 }
