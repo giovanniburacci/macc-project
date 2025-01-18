@@ -208,11 +208,12 @@ class RegistrationActivity : AppCompatActivity() {
 
                 // Save user data in db
                 val uid = auth.currentUser!!.uid
-                val body = AddUserBody(uid = uid, username = username, email = email)
-                viewModel.createUser(body)
                 val languageMap = getLanguageCodeMap()
+                val languageCode = languageMap[language] ?: "it"
+                val body = AddUserBody(uid = uid, username = username, email = email, target_language = languageCode)
+                viewModel.createUser(body)
 
-                val languageCode = languageMap[language]
+                // Saving target language in shared preferences
                 val sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
                 val editor = sharedPreferences.edit()
                 editor.putString("targetLanguage", languageCode)

@@ -107,6 +107,7 @@ data class AddUserBody(
     @SerializedName("uid") val uid: String,
     @SerializedName("username") val username: String,
     @SerializedName("email") val email: String,
+    @SerializedName("target_language") val target_language: String
 )
 
 data class MessageResponse(
