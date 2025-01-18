@@ -29,6 +29,7 @@ import com.example.macc_app.components.CommentInputBar
 import com.example.macc_app.components.ExplanationBox
 import com.example.macc_app.components.MessagesList
 import com.example.macc_app.data.remote.AddCommentBody
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -149,7 +150,7 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
                     run {
                         val body = AddCommentBody(
                             commentText,
-                            viewModel.lastChat.value!!.user_id,
+                            FirebaseAuth.getInstance().currentUser!!.uid,
                             viewModel.lastChat.value!!.id
                         )
                         viewModel.addComment(body)
