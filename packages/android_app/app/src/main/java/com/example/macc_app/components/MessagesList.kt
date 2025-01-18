@@ -54,7 +54,7 @@ fun MessagesList(
                     val city = message.city.value
                     ChatBubble(
                         message,
-                        Modifier.align(Alignment.Start),
+                        Modifier.align(Alignment.End),
                         translation = false,
                         onLongPress = { selectedText ->
                             onLongPressChatBubble(selectedText)
@@ -66,7 +66,7 @@ fun MessagesList(
                     if (isTranslation) {
                         ChatBubble(
                             message,
-                            Modifier.align(Alignment.End),
+                            Modifier.align(Alignment.Start),
                             translation = true,
                             onLongPress = { selectedText ->
                                 onLongPressChatBubble(selectedText)
