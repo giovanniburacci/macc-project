@@ -36,9 +36,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.macc_app.R
 import com.google.firebase.auth.FirebaseAuth
-import java.time.ZonedDateTime
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,17 +141,19 @@ fun shortenText(text: String, maxLength: Int): String {
 @SuppressLint("NewApi")
 fun formatDate(dateString: String): String {
     return try {
-        // Parse the input date
-        val inputFormatter = DateTimeFormatter.RFC_1123_DATE_TIME
-        val date = ZonedDateTime.parse(dateString, inputFormatter)
+        Log.d("ChatHistory", "Date string: $dateString")
+        val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val date = LocalDateTime.parse(dateString, inputFormatter).plusHours(1L)
+        Log.d("ChatHistory", "Date parsed: $date")
 
         // Format the date for display
-        val outputFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a", Locale.ENGLISH)
+        val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm", Locale.ENGLISH)
+
         Log.d("ChatHistory", "Formatted date: ${outputFormatter.format(date)} from ${dateString}, ${Locale.getDefault()}")
-        date.format(outputFormatter)
+        date.format(outputFormatter).toString()
     } catch (e: Exception) {
         // Return original date string if formatting fails
-        Log.e("ChatHistory", "Error format date from ${dateString}")
+        Log.e("ChatHistory", "Error format date from $dateString")
         dateString
     }
 }
