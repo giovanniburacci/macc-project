@@ -152,6 +152,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
             FloatingActionButton(
                 onClick = {
                     if (navController.currentBackStackEntry?.destination?.route !== "cameraOrGallery") {
+                        model.fetchMessages(model.lastChat.value!!.id)
                         navController.navigate("cameraOrGallery")
                     }
                 },

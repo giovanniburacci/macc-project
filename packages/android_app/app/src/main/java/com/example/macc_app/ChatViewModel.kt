@@ -70,6 +70,8 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
 
     val lastChat = mutableStateOf<ChatResponse?>(null)
 
+    val readOnlyChat = mutableStateOf<ChatResponse?>(null)
+
     private var textToSpeech: TextToSpeech? = null
     private var recognizer: SpeechRecognizer? = null
     private var locationProviderClient: FusedLocationProviderClient? = null
@@ -153,7 +155,6 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 val response = myApiService.fetchMessages(chatId)
                 messages.clear()
                 messages.addAll(mapMessageResponseListToMessageList(response).toMutableList())
-
                 Log.d("ChatViewModel", "Response from fetchMessages API: $response")
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error fetching messages", e)
@@ -188,8 +189,8 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         }
     }
 
-    fun setChat(chat: ChatResponse) {
-        lastChat.value = chat
+    fun setReadOnlyChat(chat: ChatResponse) {
+        readOnlyChat.value = chat
     }
 
     fun updateIsChatPublic(chatId: Long) {
@@ -474,7 +475,6 @@ private fun fetchLocation(context: Context, fusedLocationClient: FusedLocationPr
                     Log.d("ChatViewModel", "City: $cityName")
                 } else {
                     callback("Unknown")
-                    Toast.makeText(context, "Location is null. Try again later.", Toast.LENGTH_LONG).show()
                 }
             } else {
                 Toast.makeText(context, "Unable to fetch location", Toast.LENGTH_LONG).show()

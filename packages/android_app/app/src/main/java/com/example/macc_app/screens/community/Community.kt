@@ -1,8 +1,6 @@
 package com.example.macc_app.screens.community
 
 import ChatViewModel
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,7 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,7 +48,7 @@ fun Community(navController: NavController, viewModel: ChatViewModel) {
                         .padding(8.dp)
                         .fillMaxWidth()
                         .clickable {
-                            viewModel.setChat(ChatResponse(id = chat.id, name = chat.name, is_public = chat.is_public, creation_time = chat.creation_time, preview = chat.preview, last_update = chat.last_update, user_id = chat.user_id))
+                            viewModel.setReadOnlyChat(ChatResponse(id = chat.id, name = chat.name, is_public = chat.is_public, creation_time = chat.creation_time, preview = chat.preview, last_update = chat.last_update, user_id = chat.user_id))
                             viewModel.fetchMessages(chat.id)
                             viewModel.fetchComments(chat.id)
                             navController.navigate("community/${chat.id}") // Pass the cardId

@@ -79,7 +79,7 @@ fun ChatHistory(navController: NavController, viewModel: ChatViewModel) {
                             .padding(8.dp)
                             .fillMaxWidth()
                             .clickable {
-                                viewModel.setChat(chat)
+                                viewModel.setReadOnlyChat(chat)
                                 viewModel.fetchMessages(chat.id)
                                 navController.navigate("chatHistory/${chat.id}") // Pass the cardId
                             },
