@@ -1,7 +1,5 @@
 package com.example.macc_app
 
-import ChatViewModel
-import ChatViewModelFactory
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -30,7 +28,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.compose.AppTheme
+import com.example.macc_app.ui.theme.AppTheme
+import com.example.macc_app.data.remote.PythonAnywhereClient
 import com.example.macc_app.screens.CameraOrGallery
 import com.example.macc_app.screens.history.ChatHistory
 import com.example.macc_app.screens.history.HistoryViewOnlyChat
@@ -43,8 +42,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : ComponentActivity() {
 
-    val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl("https://ghinoads.pythonanywhere.com")
+    private val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl(PythonAnywhereClient.BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -130,16 +129,14 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
                 composable(
                     "chatHistory/{chatId}", // Define the route with a parameter placeholder
                     arguments = listOf(navArgument("chatId") { type = NavType.StringType })
-                ) { backStackEntry ->
-                    val chatId = backStackEntry.arguments?.getString("chatId") ?: ""
-                    HistoryViewOnlyChat(chatId, model) // Pass the parameter to chatHistory
+                ) {
+                    HistoryViewOnlyChat(model) // Pass the parameter to chatHistory
                 }
                 composable(
                     "community/{chatId}", // Define the route with a parameter placeholder
                     arguments = listOf(navArgument("chatId") { type = NavType.StringType })
-                ) { backStackEntry ->
-                    val chatId = backStackEntry.arguments?.getString("chatId") ?: ""
-                    ViewOnlyChatWithComments(chatId, model) // Pass the parameter to chatHistory
+                ) {
+                    ViewOnlyChatWithComments(model) // Pass the parameter to chatHistory
                 }
             }
         }
@@ -213,4 +210,3 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
         }
     }
 }
-

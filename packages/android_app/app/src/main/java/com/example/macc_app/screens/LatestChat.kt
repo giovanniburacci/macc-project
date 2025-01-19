@@ -1,10 +1,8 @@
 package com.example.macc_app.screens
 
-import ChangeNameModal
-import ChatViewModel
-import MessageType
-import android.content.Context.MODE_PRIVATE
-import android.content.SharedPreferences
+import com.example.macc_app.components.ChangeNameModal
+import com.example.macc_app.ChatViewModel
+import com.example.macc_app.MessageType
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
@@ -53,13 +51,11 @@ import com.example.macc_app.components.MessagesList
 import com.example.macc_app.components.RecognizedTextDialog
 import com.example.macc_app.data.remote.AddChatBody
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LatestChat(viewModel: ChatViewModel) {
     val context = LocalContext.current
     val messages = viewModel.messages
-
 
     val showConfirmationPopup = viewModel.showConfirmationPopup
     val lastMessage = viewModel.lastMessage
@@ -290,7 +286,6 @@ fun LatestChat(viewModel: ChatViewModel) {
                         },
                         onSpeechStart = {
                             viewModel.startSpeechRecognition(
-                                context,
                                 onError = { error ->
                                     if (error == "7") {
                                         Toast.makeText(

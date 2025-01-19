@@ -27,7 +27,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.macc_app.R
 
-
 @Composable
 fun MessageInput(
     onTextSend: (String, Long) -> Unit,

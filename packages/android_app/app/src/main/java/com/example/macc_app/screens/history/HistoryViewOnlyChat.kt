@@ -1,7 +1,7 @@
 package com.example.macc_app.screens.history
 
-import ChangeNameModal
-import ChatViewModel
+import com.example.macc_app.components.ChangeNameModal
+import com.example.macc_app.ChatViewModel
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,7 +42,7 @@ import com.example.macc_app.components.MessagesList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryViewOnlyChat(chatId: String, viewModel: ChatViewModel) {
+fun HistoryViewOnlyChat(viewModel: ChatViewModel) {
 
     var showExplanation by remember { mutableStateOf(false) }
 

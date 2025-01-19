@@ -9,9 +9,6 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface PythonAnywhereFactorAPI {
-    @GET("/user")
-    suspend fun getUsers(): List<UserResponse>
-
     @GET("/user/{uid}")
     suspend fun getUser(@Path("uid") uid: String): UserResponse
 
@@ -24,11 +21,11 @@ interface PythonAnywhereFactorAPI {
 
     @Headers("Content-Type: application/json")
     @POST("/message")
-    suspend fun addMessage(@Body body: AddChatMessage): Object
+    suspend fun addMessage(@Body body: AddChatMessage): Any
 
     @Headers("Content-Type: application/json")
     @POST("/user")
-    suspend fun addUser(@Body body: AddUserBody): Object
+    suspend fun addUser(@Body body: AddUserBody): Any
 
     @GET("/message/{chatId}")
     suspend fun fetchMessages(@Path("chatId") chatId: Long): List<MessageResponse>
@@ -47,19 +44,13 @@ interface PythonAnywhereFactorAPI {
 
     @Headers("Content-Type: application/json")
     @PUT("/chat/change-name")
-    suspend fun updateChatName(@Body body: ChangeNameBody): Object
+    suspend fun updateChatName(@Body body: ChangeNameBody): Any
 
     @Headers("Content-Type: application/json")
     @POST("/comment")
     suspend fun addComment(@Body body: AddCommentBody): Comment
 
 }
-
-data class PythonAnywhereFactorResponse(
-    @SerializedName("id") val id: String,
-    @SerializedName("status") val status: String,
-    @SerializedName("factors") val factors: List<List<String>>
-)
 
 data class UserResponse(
     @SerializedName("creation_time") val creation_time: String,

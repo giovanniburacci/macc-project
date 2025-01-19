@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.macc_app.MainActivity
 import com.example.macc_app.R
+import com.example.macc_app.data.remote.PythonAnywhereClient
 import com.example.macc_app.data.remote.PythonAnywhereFactorAPI
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
 
     private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl("https://ghinoads.pythonanywhere.com")
+        .baseUrl(PythonAnywhereClient.BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

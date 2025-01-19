@@ -1,7 +1,6 @@
 package com.example.macc_app.screens.history
 
-import ChatViewModel
-import android.annotation.SuppressLint
+import com.example.macc_app.ChatViewModel
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -36,13 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.macc_app.R
 import com.google.firebase.auth.FirebaseAuth
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -138,7 +133,6 @@ fun shortenText(text: String, maxLength: Int): String {
     }
 }
 
-@SuppressLint("NewApi")
 fun formatDate(dateString: String): String {
     return try {
         Log.d("ChatHistory", "Date string: $dateString")

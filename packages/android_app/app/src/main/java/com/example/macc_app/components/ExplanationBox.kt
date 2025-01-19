@@ -38,7 +38,6 @@ import coil.compose.AsyncImage
 import com.example.macc_app.R
 import kotlinx.coroutines.delay
 
-
 @Composable
 fun ExplanationBox(
     onDismiss: () -> Unit,
@@ -157,4 +156,3 @@ fun ExplanationBox(
         }
     }
 }
-

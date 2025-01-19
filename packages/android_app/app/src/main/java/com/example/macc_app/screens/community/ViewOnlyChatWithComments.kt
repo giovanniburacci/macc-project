@@ -1,6 +1,6 @@
 package com.example.macc_app.screens.community
 
-import ChatViewModel
+import com.example.macc_app.ChatViewModel
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +33,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
+fun ViewOnlyChatWithComments(viewModel: ChatViewModel) {
 
     var showExplanation by remember { mutableStateOf(false) }
 
@@ -146,7 +146,7 @@ fun ViewOnlyChatWithComments(chatId: String, viewModel: ChatViewModel) {
                     .navigationBarsPadding()
                     .padding(bottom = 80.dp)
             ) {
-                CommentInputBar() { commentText ->
+                CommentInputBar { commentText ->
                     run {
                         val body = AddCommentBody(
                             commentText,

@@ -1,6 +1,6 @@
 package com.example.macc_app.screens.community
 
-import ChatViewModel
+import com.example.macc_app.ChatViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

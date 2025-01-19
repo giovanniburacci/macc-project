@@ -1,3 +1,5 @@
+package com.example.macc_app
+
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -53,7 +55,7 @@ class ChatViewModelFactory(private val retrofit: Retrofit) : ViewModelProvider.F
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
-class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
+class ChatViewModel(retrofit: Retrofit): ViewModel() {
 
     private val myApiService: PythonAnywhereFactorAPI = retrofit.create(PythonAnywhereFactorAPI::class.java)
 
@@ -72,7 +74,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
 
     val readOnlyChat = mutableStateOf<ChatResponse?>(null)
 
-    val isDownloadingModel = mutableStateOf<Boolean>(false)
+    val isDownloadingModel = mutableStateOf(false)
 
     private var textToSpeech: TextToSpeech? = null
     private var recognizer: SpeechRecognizer? = null
@@ -92,7 +94,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         locationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     }
 
-    fun mapMessageResponseListToMessageList(messageResponses: List<MessageResponse>): List<Message> {
+    private fun mapMessageResponseListToMessageList(messageResponses: List<MessageResponse>): List<Message> {
         return messageResponses.map { mapMessageResponseToMessage(it) }
     }
 
@@ -108,14 +110,14 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun fetchHistory(uid: String) {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "Fetch history with uid: $uid")
+                Log.d("com.example.macc_app.ChatViewModel", "Fetch history with uid: $uid")
                 val response = myApiService.fetchHistory(uid)
                 history.clear()
                 history.addAll(response)
 
-                Log.d("ChatViewModel", "Response from history API: $response")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from history API: $response")
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error fetching chats history", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error fetching chats history", e)
             }
         }
     }
@@ -123,13 +125,13 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun fetchCommunity() {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "Fetch community")
+                Log.d("com.example.macc_app.ChatViewModel", "Fetch community")
                 val response = myApiService.fetchCommunity()
                 community.clear()
                 community.addAll(response)
-                Log.d("ChatViewModel", "Response from community API: $response")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from community API: $response")
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error fetching chats community", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error fetching chats community", e)
             }
         }
     }
@@ -137,10 +139,10 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun updateChatName(chatId: Long, name: String) {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "Update chat name with name: $name for chat $chatId")
+                Log.d("com.example.macc_app.ChatViewModel", "Update chat name with name: $name for chat $chatId")
                 val body = ChangeNameBody(chat_id = chatId, name = name)
                 val resp = myApiService.updateChatName(body)
-                Log.d("ChatViewModel", "Response from API: ${resp}")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from API: $resp")
                 if(lastChat.value?.id == chatId) {
                     val updatedChat = lastChat.value!!.copy()
                     updatedChat.name = name
@@ -152,7 +154,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                     readOnlyChat.value = updatedChat
                 }
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error changing name", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error changing name", e)
             }
         }
     }
@@ -160,13 +162,13 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun fetchMessages(chatId: Long) {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "Fetch messages with chatId: $chatId")
+                Log.d("com.example.macc_app.ChatViewModel", "Fetch messages with chatId: $chatId")
                 val response = myApiService.fetchMessages(chatId)
                 messages.clear()
                 messages.addAll(mapMessageResponseListToMessageList(response).toMutableList())
-                Log.d("ChatViewModel", "Response from fetchMessages API: $response")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from fetchMessages API: $response")
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error fetching messages", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error fetching messages", e)
             }
         }
     }
@@ -174,13 +176,13 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun fetchComments(chatId: Long) {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "Fetch comments with chatId: $chatId")
+                Log.d("com.example.macc_app.ChatViewModel", "Fetch comments with chatId: $chatId")
                 val response = myApiService.fetchComments(chatId)
                 comments.clear()
                 comments.addAll(response)
-                Log.d("ChatViewModel", "Response from fetchComments API: $response")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from fetchComments API: $response")
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error fetching comments", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error fetching comments", e)
             }
         }
     }
@@ -188,12 +190,12 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun addComment(body: AddCommentBody) {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "Uid: $body")
+                Log.d("com.example.macc_app.ChatViewModel", "Uid: $body")
                 val response = myApiService.addComment(body)
                 fetchComments(body.chat_id)
-                Log.d("ChatViewModel", "Response from addComment API: $response")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from addComment API: $response")
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error adding comment", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error adding comment", e)
             }
         }
     }
@@ -205,7 +207,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun updateIsChatPublic(chatId: Long) {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "chatId: $chatId")
+                Log.d("com.example.macc_app.ChatViewModel", "chatId: $chatId")
                 val response = myApiService.updateIsChatPublic(chatId)
                 if(lastChat.value?.id == chatId) {
                     lastChat.value = response
@@ -213,9 +215,9 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 if(readOnlyChat.value?.id == chatId){
                     readOnlyChat.value = response
                 }
-                Log.d("ChatViewModel", "Response from API updateIsChatPublic: $response")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from API updateIsChatPublic: $response")
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error updateIsChatPublic", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error updateIsChatPublic", e)
             }
         }
     }
@@ -223,17 +225,17 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun fetchLastChat(uid: String) {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "Uid: $uid")
+                Log.d("com.example.macc_app.ChatViewModel", "Uid: $uid")
                 val response = myApiService.getLastChatFromUser(uid)
                 lastChat.value = response
                 fetchMessages(lastChat.value!!.id)
-                Log.d("ChatViewModel", "Response from fetchLastChat API: $response")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from fetchLastChat API: $response")
             } catch (e: Exception) {
                 if(uid.isNotEmpty()) {
                     val body = AddChatBody(name = "New Chat", is_public = false, user_id = uid)
                     createChat(body, false)
                 }
-                Log.e("ChatViewModel", "Error fetching last chat", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error fetching last chat", e)
             }
         }
     }
@@ -241,27 +243,27 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun createChat(body: AddChatBody, clearMessages: Boolean) {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "Uid: $body")
+                Log.d("com.example.macc_app.ChatViewModel", "Uid: $body")
                 val response = myApiService.addChat(body)
                 lastChat.value = response
                 if(clearMessages) {
                     messages.clear()
                 }
-                Log.d("ChatViewModel", "Response from addChat API: $response")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from addChat API: $response")
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error creating chat", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error creating chat", e)
             }
         }
     }
 
-    fun addMessage(body: AddChatMessage) {
+    private fun addMessage(body: AddChatMessage) {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "Uid: $body")
+                Log.d("com.example.macc_app.ChatViewModel", "Uid: $body")
                 val response = myApiService.addMessage(body)
-                Log.d("ChatViewModel", "Response from addMessage API: $response")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from addMessage API: $response")
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error adding message", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error adding message", e)
             }
         }
     }
@@ -269,11 +271,11 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     fun createUser(body: AddUserBody) {
         viewModelScope.launch {
             try {
-                Log.d("ChatViewModel", "Uid: $body")
+                Log.d("com.example.macc_app.ChatViewModel", "Uid: $body")
                 val response = myApiService.addUser(body)
-                Log.d("ChatViewModel", "Response from API: $response")
+                Log.d("com.example.macc_app.ChatViewModel", "Response from API: $response")
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error creating user", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Error creating user", e)
             }
         }
     }
@@ -298,13 +300,13 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                 if (type == MessageType.TEXT) {
                     fetchLocation(
                         context,
-                        locationProviderClient!!,
-                        { cityName -> processTextMessage(message, targetLanguage, cityName, context) })
+                        locationProviderClient!!
+                    ) { cityName -> processTextMessage(message, targetLanguage, cityName, context) }
                 } else if (type == MessageType.AUDIO) {
                     fetchLocation(
                         context,
-                        locationProviderClient!!,
-                        { cityName -> transcribeAudio(context, message, targetLanguage, cityName) })
+                        locationProviderClient!!
+                    ) { cityName -> transcribeAudio(context, message, targetLanguage, cityName) }
                 }
             }
         }
@@ -327,10 +329,10 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                     val body = AddChatMessage(message = message.originalContent, translation = message.originalContent, city = cityName, chat_id = lastChat.value!!.id)
                     addMessage(body)
                     Toast.makeText(context, "Language not identified, please try again", Toast.LENGTH_LONG).show()
-                    Log.e("ChatViewModel", "Language not identified")
+                    Log.e("com.example.macc_app.ChatViewModel", "Language not identified")
                 }
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Language identification failed", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Language identification failed", e)
             }
         }
     }
@@ -367,10 +369,10 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
                     message.city.value = cityName
                     val body = AddChatMessage(message = message.originalContent, translation = translatedText, city = cityName, chat_id = lastChat.value!!.id)
                     addMessage(body)
-                    Log.d("ChatViewModel", "Translated text: $translatedText")
+                    Log.d("com.example.macc_app.ChatViewModel", "Translated text: $translatedText")
                 }
             } catch (e: Exception) {
-                Log.e("ChatViewModel", "Translation failed", e)
+                Log.e("com.example.macc_app.ChatViewModel", "Translation failed", e)
             }
         }
     }
@@ -378,7 +380,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
     private fun transcribeAudio(context: Context, message: Message, targetLanguage: String, cityName: String) {
         viewModelScope.launch {
             try {
-                val text = recognizeSpeech(context)
+                val text = recognizeSpeech()
                 if (text.isNotEmpty()) {
                     message.translatedContent.value = text
                     processTextMessage(message, targetLanguage, cityName, context)
@@ -391,7 +393,7 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         }
     }
 
-    private suspend fun recognizeSpeech(context: Context): String = withContext(Dispatchers.Main) {
+    private suspend fun recognizeSpeech(): String = withContext(Dispatchers.Main) {
         suspendCancellableCoroutine { continuation ->
             var isContinuationResumed = false // Flag to ensure single resumption
 
@@ -452,10 +454,10 @@ class ChatViewModel(private val retrofit: Retrofit): ViewModel() {
         }
     }
 
-    fun startSpeechRecognition(context: Context, onError: (String) -> Unit) {
+    fun startSpeechRecognition(onError: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.Main) {
             try {
-                val text = recognizeSpeech(context)
+                val text = recognizeSpeech()
                 if (text.isNotEmpty()) {
                     showConfirmationPopup.value = true
                     lastMessage.value = Message(originalContent = text)
@@ -483,12 +485,12 @@ private fun fetchLocation(context: Context, fusedLocationClient: FusedLocationPr
             if (task.isSuccessful) {
                 val location = task.result
                 if (location != null) {
-                    Log.d("ChatViewModel", "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
+                    Log.d("com.example.macc_app.ChatViewModel", "Latitude: ${location.latitude}, Longitude: ${location.longitude}")
                     val cityName = getCityName(location.latitude, location.longitude, context)
                     if(!cityName.isNullOrEmpty()) {
                         callback(cityName)
                     }
-                    Log.d("ChatViewModel", "City: $cityName")
+                    Log.d("com.example.macc_app.ChatViewModel", "City: $cityName")
                 } else {
                     callback("Unknown")
                 }

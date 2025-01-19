@@ -1,7 +1,7 @@
 package com.example.macc_app.authentication
 
-import ChatViewModel
-import ChatViewModelFactory
+import com.example.macc_app.ChatViewModel
+import com.example.macc_app.ChatViewModelFactory
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
@@ -18,10 +18,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.macc_app.MainActivity
 import com.example.macc_app.R
 import com.example.macc_app.data.remote.AddUserBody
+import com.example.macc_app.data.remote.PythonAnywhereClient
 import com.google.firebase.auth.FirebaseAuth
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
 
 class RegistrationActivity : AppCompatActivity() {
     private lateinit var username: EditText
@@ -35,7 +35,7 @@ class RegistrationActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
 
     private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(PYTHON_ANYWHERE_URL)
+        .baseUrl(PythonAnywhereClient.BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -48,23 +48,18 @@ class RegistrationActivity : AppCompatActivity() {
         private const val PASSWORD_NOT_MATCH_MESSAGE = "Password does not match!"
         private const val REGISTRATION_SUCCESSFUL_MESSAGE = "Registration successful!"
         private const val REGISTRATION_FAILED_MESSAGE = "Registration failed!"
-
-        private const val PYTHON_ANYWHERE_URL = "https://ghinoads.pythonanywhere.com"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.registration_activity)
-        languageSpinner = findViewById<Spinner>(R.id.spinner2)
-
+        languageSpinner = findViewById(R.id.spinner2)
 
         val adapter = ArrayAdapter.createFromResource(
             this, R.array.languages, android.R.layout.simple_spinner_item
         )
 
-
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
 
         languageSpinner.adapter = adapter
         var index = -1
@@ -75,8 +70,7 @@ class RegistrationActivity : AppCompatActivity() {
             }
         }
 
-
-// Set the default selection
+        // Set the default selection
         if (index != -1) {
             languageSpinner.setSelection(index)
         } else {
@@ -159,7 +153,6 @@ class RegistrationActivity : AppCompatActivity() {
         )
     }
 
-
     private fun registerUserAccount() {
         // Turn progress bar visible for showing the loading progress
         progressBar.visibility = View.VISIBLE
@@ -218,7 +211,6 @@ class RegistrationActivity : AppCompatActivity() {
                 val editor = sharedPreferences.edit()
                 editor.putString("targetLanguage", languageCode)
                 editor.apply()
-
 
                 // Intent to home activity
                 val intent = Intent(this, MainActivity::class.java)

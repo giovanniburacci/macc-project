@@ -1,5 +1,6 @@
 package com.example.macc_app
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Camera
 import android.graphics.Canvas
@@ -16,6 +17,7 @@ import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
+@SuppressLint("ViewConstructor")
 class SensorView(
     context: Context,
     text: String,
@@ -28,8 +30,8 @@ class SensorView(
     //Camera object for 3D transformation
     private val camera = Camera()
 
-    var mLastRotationVector = FloatArray(3) //The last value of the rotation vector
-    var mRotationMatrix = FloatArray(9) //3x3 rotation matrix
+    private var mLastRotationVector = FloatArray(3) //The last value of the rotation vector
+    private var mRotationMatrix = FloatArray(9) //3x3 rotation matrix
 
     /*
         mRotationMatrix:
@@ -39,20 +41,20 @@ class SensorView(
     */
 
     //Orientation angles
-    var pitch = 0f
-    var roll = 0f
-    var yaw = 0f
+    private var pitch = 0f
+    private var roll = 0f
+    private var yaw = 0f
 
-    var a = 0.001f //Low-band pass filter
+    private var a = 0.001f //Low-band pass filter
 
     //Paint for drawing text on the canvas
-    val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.BLACK // Set text color to black
         textSize = 32f // Set text size to 32 pixels
     }
 
-    var M = Matrix() //Matrix as change-of-basis
-    var M2 = Matrix() //Matrix used to rotate head compass
+    private var containerMatrix = Matrix() //Matrix as change-of-basis
+    private var cameraMatrix = Matrix() //Matrix used to rotate head compass
 
     init {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -84,14 +86,14 @@ class SensorView(
     }
 
     override fun onFlushCompleted(sensor: Sensor?) {
-        //TODO("Not yet implemented")
+        
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         //Set up a transformation matrix to scale and translate the view
-        M.setScale(1f, -1f)
-        M.preConcat(Matrix().apply { setTranslate(w / 2f, -h / 2f) })
+        containerMatrix.setScale(1f, -1f)
+        containerMatrix.preConcat(Matrix().apply { setTranslate(w / 2f, -h / 2f) })
         // View's width and height are now available in w and h
 
     }
@@ -103,7 +105,7 @@ class SensorView(
         if (yawEnabled) camera.rotateZ(yaw) //Apply yaw rotation
         if (pitchEnabled) camera.rotateX(pitch) //Apply pitch rotation
         if (rollEnabled) camera.rotateY(roll) //Apply roll rotation
-        camera.getMatrix(M2) //Get the transformation matrix
+        camera.getMatrix(cameraMatrix) //Get the transformation matrix
         camera.restore()
 
         with(canvas) {
@@ -111,8 +113,8 @@ class SensorView(
             if (rollEnabled) drawText("ROLL: $roll", 0f, 80f, textPaint)
             if (yawEnabled) drawText("YAW: $yaw", 0f, 120f, textPaint)
             with(canvas) {
-                withMatrix(M) { //Apply base transformation
-                    withMatrix(M2) { //Apply Camera transformation
+                withMatrix(containerMatrix) { //Apply base transformation
+                    withMatrix(cameraMatrix) { //Apply Camera transformation
                         drawText(textToDraw, 0f, width / 3f, textPaint)
                     }
                 }

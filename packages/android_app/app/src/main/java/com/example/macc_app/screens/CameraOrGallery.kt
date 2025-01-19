@@ -1,7 +1,6 @@
 package com.example.macc_app.screens
 
-import ChatViewModel
-import android.Manifest
+import com.example.macc_app.ChatViewModel
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -31,6 +30,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.macc_app.MessageType
 import com.example.macc_app.R
 import com.example.macc_app.components.RecognizedTextDialog
 import java.io.File
@@ -57,8 +57,8 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     val capturedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    var showRecognizedTextDialog by remember { mutableStateOf<Boolean>(false) }
-    var recognizedText by remember { mutableStateOf<String>("") }
+    var showRecognizedTextDialog by remember { mutableStateOf(false) }
+    var recognizedText by remember { mutableStateOf("") }
 
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
@@ -90,7 +90,6 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
         val inputStream = context.contentResolver.openInputStream(uri)
         return BitmapFactory.decodeStream(inputStream)
     }
-
 
     suspend fun takePicture(
         context: Context, // Current context
@@ -199,7 +198,7 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
                             }
                         }
                     },
-                    modifier = Modifier.offset(x = -90.dp)
+                    modifier = Modifier.offset(x = (-90).dp)
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_camera_alt_24),
@@ -222,7 +221,6 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
                     )
                 }
             }
-
         }
 
         // Display captured image URI
@@ -250,7 +248,7 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
                     imageCapture
                 )
 
-                preview.setSurfaceProvider(previewView!!.surfaceProvider)
+                preview.surfaceProvider = previewView!!.surfaceProvider
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(context, "Failed to initialize camera: ${e.message}", Toast.LENGTH_LONG).show()

@@ -1,6 +1,6 @@
 package com.example.macc_app.components
 
-import Message
+import com.example.macc_app.Message
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

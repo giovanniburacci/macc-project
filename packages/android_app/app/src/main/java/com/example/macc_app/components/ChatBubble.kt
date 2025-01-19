@@ -1,6 +1,6 @@
 package com.example.macc_app.components
 
-import Message
+import com.example.macc_app.Message
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -23,7 +23,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-
 @Composable
 fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boolean, onLongPress: (String) -> Unit, showExplanation: Boolean, showConfirmationPopup: Boolean, city: String) {
     var bubbleColor = if (translation) Color(0xFFD1E8E2) else Color(0xFFACE0F9)
@@ -43,10 +42,9 @@ fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boo
                 )
             }
     ) {
-        Log.d("ChatBubble", "Original content: ${message}")
+        Log.d("ChatBubble", "Original content: $message")
         if(!translation) {
-            Column(
-            ) {
+            Column {
                 // Main Text
                 Text(
                     text = message.originalContent,
@@ -81,6 +79,5 @@ fun ChatBubble(message: Message, modifier: Modifier = Modifier, translation: Boo
         else {
             Text(text = message.translatedContent.value, fontSize = 16.sp)
         }
-
     }
 }

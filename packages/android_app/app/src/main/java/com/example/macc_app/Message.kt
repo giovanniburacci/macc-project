@@ -1,3 +1,5 @@
+package com.example.macc_app
+
 import androidx.compose.runtime.mutableStateOf
 
 data class Message(
@@ -10,7 +12,6 @@ data class Message(
 
     var city = mutableStateOf(_city)
         private set
-
 }
 
 enum class MessageType {
