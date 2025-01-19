@@ -27,7 +27,7 @@ class SensorView(
 ) : View(context), SensorEventListener2 {
     private val textToDraw: String = text
 
-    //Camera object for 3D transformation
+    //Camera object for 2D transformation
     private val camera = Camera()
 
     private var mLastRotationVector = FloatArray(3) //The last value of the rotation vector
@@ -41,9 +41,9 @@ class SensorView(
     */
 
     //Orientation angles
-    private var pitch = 0f
-    private var roll = 0f
-    private var yaw = 0f
+    private var pitch = 0f //rotation of X axis
+    private var roll = 0f //rotation of Y axis
+    private var yaw = 0f //rotation of Z axis
 
     private var a = 0.001f //Low-band pass filter
 
@@ -70,7 +70,7 @@ class SensorView(
         //Convert the rotation vector to a 3x3 rotation matrix
         SensorManager.getRotationMatrixFromVector(mRotationMatrix, mLastRotationVector)
 
-        //Calculate the orientation angles with smoothing (low-pass filter applied)
+        //Calculate the orientation(Euler) angles with smoothing (low-pass filter applied)
         pitch = a * pitch + (1 - a) * atan2(
             -mRotationMatrix[6],
             sqrt(mRotationMatrix[0] * mRotationMatrix[0] + mRotationMatrix[3] * mRotationMatrix[3]) //Hypotenuse of X and Y
