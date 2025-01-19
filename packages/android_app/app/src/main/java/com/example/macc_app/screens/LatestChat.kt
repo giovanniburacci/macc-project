@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import com.example.macc_app.R
 import com.example.macc_app.SensorView
 import com.example.macc_app.components.ExplanationBox
@@ -225,11 +226,11 @@ fun LatestChat(viewModel: ChatViewModel) {
                     .padding(paddingValues) // Apply padding from Scaffold
             ) {
                 if(isDownloadingModel) {
-                    Column(modifier = Modifier.align(Alignment.Center)) {
+                    Column(modifier = Modifier.align(Alignment.Center).zIndex(4f)) {
                         CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                            modifier = Modifier.align(Alignment.CenterHorizontally).zIndex(5f)
                         )
-                        Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp), text = "Downloading model...")
+                        Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp).zIndex(5f), text = "Downloading model...")
 
                     }
                 }
