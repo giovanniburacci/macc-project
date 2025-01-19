@@ -28,8 +28,6 @@ import com.example.macc_app.screens.history.formatDate
 @Composable
 fun Community(navController: NavController, viewModel: ChatViewModel) {
 
-    viewModel.fetchCommunity()
-
     val community = viewModel.community
 
     Scaffold(
@@ -48,7 +46,7 @@ fun Community(navController: NavController, viewModel: ChatViewModel) {
                         .fillMaxWidth()
                         .clickable {
                             viewModel.setReadOnlyChat(ChatResponse(id = chat.id, name = chat.name, is_public = chat.is_public, creation_time = chat.creation_time, preview = chat.preview, last_update = chat.last_update, user_id = chat.user_id))
-                            viewModel.fetchMessages(chat.id)
+                            viewModel.fetchReadOnlyMessages(chat.id)
                             viewModel.fetchComments(chat.id)
                             navController.navigate("community/${chat.id}") // Pass the cardId
                         },

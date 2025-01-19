@@ -15,6 +15,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -63,9 +64,6 @@ class MainActivity : ComponentActivity() {
     ) { permissions ->
         val allPermissionsGranted = permissions.values.all { it }
 
-        if(allPermissionsGranted) {
-            viewModel.initializeSpeechComponents(this)
-        }
         permissions.entries.forEach { permission ->
             if (permission.value) {
                 // Permission granted
@@ -96,8 +94,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme  {
                 val navController = rememberNavController()
-                val context = LocalContext.current
-                viewModel.initializeSpeechComponents(context = context)
                 val auth = FirebaseAuth.getInstance()
                 Log.d("MainActivity", "User logged with uid ${auth.currentUser!!.uid}")
                 viewModel.fetchLastChat(auth.currentUser!!.uid)
@@ -110,6 +106,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppContent(navController: NavHostController, model: ChatViewModel) {
     val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        model.initializeSpeechComponents(context)
+    }
 
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant)) {
         // Top Section: Dynamic Screens
@@ -182,6 +183,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
 
             FloatingActionButton(
                 onClick = { if (navController.currentBackStackEntry?.destination?.route !== "chatHistory") {
+                    model.fetchHistory(auth.currentUser!!.uid)
                     navController.navigate("chatHistory")
                 } },
                 shape = CircleShape,
@@ -196,6 +198,7 @@ fun AppContent(navController: NavHostController, model: ChatViewModel) {
 
             FloatingActionButton(
                 onClick = { if (navController.currentBackStackEntry?.destination?.route !== "community") {
+                    model.fetchCommunity()
                     navController.navigate("community")
                 } },
                 shape = CircleShape,

@@ -60,6 +60,8 @@ class ChatViewModel(retrofit: Retrofit): ViewModel() {
 
     val messages = mutableStateListOf<Message>()
 
+    val readOnlyMessages = mutableStateListOf<Message>()
+
     val history = mutableStateListOf<ChatResponse>()
 
     val comments = mutableStateListOf<Comment>()
@@ -195,6 +197,23 @@ class ChatViewModel(retrofit: Retrofit): ViewModel() {
                 val response = myApiService.fetchMessages(chatId)
                 messages.clear()
                 messages.addAll(mapMessageResponseListToMessageList(response).toMutableList())
+                Log.d("com.example.macc_app.ChatViewModel", "Response from fetchMessages API: $response")
+            } catch (e: Exception) {
+                Log.e("com.example.macc_app.ChatViewModel", "Error fetching messages", e)
+            }
+        }
+    }
+
+    // fetching messages with network call
+    fun fetchReadOnlyMessages(chatId: Long) {
+        // launching coroutine with IO dispatcher for network
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                Log.d("com.example.macc_app.ChatViewModel", "Fetch read only messages with chatId: $chatId")
+                // retrieving response
+                val response = myApiService.fetchMessages(chatId)
+                readOnlyMessages.clear()
+                readOnlyMessages.addAll(mapMessageResponseListToMessageList(response).toMutableList())
                 Log.d("com.example.macc_app.ChatViewModel", "Response from fetchMessages API: $response")
             } catch (e: Exception) {
                 Log.e("com.example.macc_app.ChatViewModel", "Error fetching messages", e)
@@ -488,7 +507,7 @@ class ChatViewModel(retrofit: Retrofit): ViewModel() {
     }
 
     // speech recognition
-    private suspend fun recognizeSpeech(): String = withContext(Dispatchers.Main) {
+    private suspend fun recognizeSpeech(): String = withContext(Dispatchers.Default) {
         suspendCancellableCoroutine { continuation ->
             // flag to ensure single resumption, same recognition is not performed twice
             var isContinuationResumed = false
@@ -566,7 +585,7 @@ class ChatViewModel(retrofit: Retrofit): ViewModel() {
 
     // start recognition launching a new coroutine
     fun startSpeechRecognition(onError: (String) -> Unit) {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch(Dispatchers.Default) {
             try {
                 // invoke suspend fun to recognize speech
                 val text = recognizeSpeech()

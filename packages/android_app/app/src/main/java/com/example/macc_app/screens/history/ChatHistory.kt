@@ -42,8 +42,6 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatHistory(navController: NavController, viewModel: ChatViewModel) {
-    val auth = FirebaseAuth.getInstance()
-    viewModel.fetchHistory(auth.currentUser!!.uid)
 
     val history = viewModel.history
 
@@ -75,7 +73,7 @@ fun ChatHistory(navController: NavController, viewModel: ChatViewModel) {
                             .fillMaxWidth()
                             .clickable {
                                 viewModel.setReadOnlyChat(chat)
-                                viewModel.fetchMessages(chat.id)
+                                viewModel.fetchReadOnlyMessages(chat.id)
                                 navController.navigate("chatHistory/${chat.id}") // Pass the cardId
                             },
                         elevation = CardDefaults.cardElevation(4.dp)

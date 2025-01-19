@@ -58,7 +58,7 @@ fun ViewOnlyChatWithComments(viewModel: ChatViewModel) {
 
     val showConfirmationPopup = viewModel.showConfirmationPopup
 
-    val messages = viewModel.messages
+    val messages = viewModel.readOnlyMessages
     val comments = viewModel.comments
 
     Log.d("ViewOnlyChatWithComments", "Comments: $comments")

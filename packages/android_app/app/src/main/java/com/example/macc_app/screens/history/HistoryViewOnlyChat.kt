@@ -68,7 +68,7 @@ fun HistoryViewOnlyChat(viewModel: ChatViewModel) {
 
     val showConfirmationPopup = viewModel.showConfirmationPopup
 
-    val messages = viewModel.messages
+    val messages = viewModel.readOnlyMessages
     val chat = viewModel.readOnlyChat.value
 
     Scaffold(

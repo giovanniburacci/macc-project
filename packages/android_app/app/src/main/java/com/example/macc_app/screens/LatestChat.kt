@@ -86,10 +86,6 @@ fun LatestChat(viewModel: ChatViewModel) {
         yawEnabled = isChecked
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.initializeSpeechComponents(context)
-    }
-
     if(viewModel.lastChat.value == null) {
         // Show loader while content is loading
         Box(
