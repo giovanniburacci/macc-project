@@ -507,7 +507,7 @@ class ChatViewModel(retrofit: Retrofit): ViewModel() {
     }
 
     // speech recognition
-    private suspend fun recognizeSpeech(): String = withContext(Dispatchers.Default) {
+    private suspend fun recognizeSpeech(): String = withContext(Dispatchers.Main) {
         suspendCancellableCoroutine { continuation ->
             // flag to ensure single resumption, same recognition is not performed twice
             var isContinuationResumed = false
@@ -585,7 +585,7 @@ class ChatViewModel(retrofit: Retrofit): ViewModel() {
 
     // start recognition launching a new coroutine
     fun startSpeechRecognition(onError: (String) -> Unit) {
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.Main) {
             try {
                 // invoke suspend fun to recognize speech
                 val text = recognizeSpeech()
