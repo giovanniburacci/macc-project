@@ -43,7 +43,7 @@ fun MessagesList(
         coroutineScope.launch {
             if (!messages.isNullOrEmpty()) {
                 delay(250)
-                // Animate scroll to the 10th item
+                // Animate scroll to the last item
                 listState.animateScrollToItem(messages.size * 2)
             }
         }

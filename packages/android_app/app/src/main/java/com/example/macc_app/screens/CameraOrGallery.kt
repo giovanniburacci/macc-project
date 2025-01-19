@@ -44,6 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -64,7 +65,7 @@ fun CameraOrGallery(viewModel: ChatViewModel = viewModel(), navController: NavCo
 
     var previewView by remember { mutableStateOf<PreviewView?>(null) }
 
-    suspend fun recognizeTextFromBitmap(bitmap: Bitmap, context: Context) {
+    suspend fun recognizeTextFromBitmap(bitmap: Bitmap, context: Context) = withContext(Dispatchers.Default) {
         // Convert the Bitmap to an InputImage
         val image = InputImage.fromBitmap(bitmap, 0)
 
