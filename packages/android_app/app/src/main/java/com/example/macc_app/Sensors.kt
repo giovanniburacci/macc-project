@@ -41,9 +41,9 @@ class SensorView(
     */
 
     //Orientation angles
+    private var yaw = 0f //rotation of Z axis
     private var pitch = 0f //rotation of X axis
     private var roll = 0f //rotation of Y axis
-    private var yaw = 0f //rotation of Z axis
 
     private var a = 0.001f //Low-band pass filter
 
